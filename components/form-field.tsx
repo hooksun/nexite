@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Controller,
   ControllerFieldState,
@@ -7,7 +9,6 @@ import {
   UseFormStateReturn,
 } from "react-hook-form"
 import { Field, FieldDescription, FieldError, FieldLabel } from "./ui/field"
-import { Input } from "./ui/input"
 import {
   InputHTMLAttributes,
   ReactNode,
@@ -19,6 +20,7 @@ import InputSelect, { InputSelectProps } from "./ui/input-select"
 import { Optional } from "@/lib/utils"
 import InputSearch from "./ui/input-search"
 import InputPrice, { InputPriceProps } from "./ui/input-price"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group"
 
 type FormInput = ({
   field,
@@ -32,11 +34,25 @@ type FormInput = ({
   id: string
 }) => React.ReactElement
 
-export function formInput(
-  props?: InputHTMLAttributes<HTMLInputElement>
-): FormInput {
+export function formInput({
+  left,
+  right,
+  ...props
+}: {
+  left?: ReactNode
+  right?: ReactNode
+} & InputHTMLAttributes<HTMLInputElement> = {}): FormInput {
   return ({ field, id }) => (
-    <Input id={id} {...props} {...field} value={field.value ?? ""} />
+    <InputGroup>
+      {left && <InputGroupAddon>{left}</InputGroupAddon>}
+      <InputGroupInput
+        id={id}
+        {...props}
+        {...field}
+        value={field.value ?? ""}
+      />
+      {right && <InputGroupAddon align="inline-end">{right}</InputGroupAddon>}
+    </InputGroup>
   )
 }
 
@@ -91,11 +107,13 @@ export default function FormField({
   name,
   label = name,
   description,
+  className,
   render = formInput(),
   ...props
 }: {
   label?: ReactNode
   description?: ReactNode
+  className?: string
   render?: FormInput
 } & UseControllerProps) {
   const id = useId()
@@ -104,7 +122,7 @@ export default function FormField({
       name={name}
       {...props}
       render={({ field, fieldState, formState }) => (
-        <Field data-invalid={fieldState.invalid}>
+        <Field data-invalid={fieldState.invalid} className={className}>
           {label && (
             <FieldLabel htmlFor={id} className="capitalize">
               {label}

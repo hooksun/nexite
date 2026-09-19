@@ -1,0 +1,1 @@
+// Insert generated supabase types

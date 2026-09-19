@@ -12,6 +12,7 @@ import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 import { SidebarMenuButton } from "./ui/sidebar"
+import { cn } from "cn"
 
 const ThemeSwitcher = () => {
   const [mounted, setMounted] = useState(false)
@@ -22,10 +23,6 @@ const ThemeSwitcher = () => {
     setMounted(true)
   }, [])
 
-  if (!mounted) {
-    return null
-  }
-
   return (
     <Tooltip>
       <DropdownMenu>
@@ -33,8 +30,10 @@ const ThemeSwitcher = () => {
           render={
             <TooltipTrigger
               render={
-                <SidebarMenuButton className="w-min">
-                  {resolvedTheme === "light" ? (
+                <SidebarMenuButton
+                  className={cn("w-min", !mounted && "invisible")}
+                >
+                  {!mounted || resolvedTheme === "light" ? (
                     <Sun key="light" className={"text-muted-foreground"} />
                   ) : (
                     <Moon key="dark" className={"text-muted-foreground"} />

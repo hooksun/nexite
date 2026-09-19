@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useState } from "react"
+import { ReactNode } from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -11,15 +11,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
   useSidebar,
 } from "./ui/sidebar"
 import { ThemeSwitcher } from "./theme-switcher"
-import { ChevronLeft, FileTextIcon, Home, X } from "lucide-react"
+import { CodeXml, FileTextIcon, Home, Table2, X } from "lucide-react"
 import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
-import { Button } from "./ui/button"
+import { usePath } from "@/hooks/use-path-state"
 
 function NavbarMenu({
   icon,
@@ -38,7 +36,7 @@ function NavbarMenu({
         <SidebarMenuItem>
           <SidebarMenuButton
             render={
-              <Link href={path} onClick={(e) => e.stopPropagation()}>
+              <Link href={path}>
                 {icon}
                 {label}
               </Link>
@@ -53,6 +51,8 @@ function NavbarMenu({
 
 export default function Navbar() {
   const { setOpen, setOpenMobile, state, isMobile } = useSidebar()
+
+  const path = usePath()
 
   return (
     <Sidebar collapsible="icon" onClick={() => setOpen(true)}>
@@ -69,19 +69,25 @@ export default function Navbar() {
         </SidebarMenuButton>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup onClick={(e) => e.stopPropagation()}>
           <SidebarMenu>
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <NavbarMenu
               icon={<Home />}
               label="Home"
-              path="/"
+              path={path("/")}
               showTooltip={state == "collapsed" && !isMobile}
             />
             <NavbarMenu
               icon={<FileTextIcon />}
               label="Form"
-              path="/form"
+              path={path("/form")}
+              showTooltip={state == "collapsed" && !isMobile}
+            />
+            <NavbarMenu
+              icon={<Table2 />}
+              label="Table"
+              path={path("/table")}
               showTooltip={state == "collapsed" && !isMobile}
             />
           </SidebarMenu>
@@ -89,7 +95,29 @@ export default function Navbar() {
       </SidebarContent>
       <SidebarFooter className="items-start">
         <SidebarMenu onClick={(e) => e.stopPropagation()}>
-          <ThemeSwitcher />
+          <SidebarMenuItem>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <SidebarMenuButton
+                    className="w-fit text-muted-foreground"
+                    render={
+                      <Link
+                        target="_blank"
+                        href={"https://github.com/hooksun/nexite"}
+                      >
+                        <CodeXml />
+                      </Link>
+                    }
+                  />
+                }
+              />
+              <TooltipContent side="right">View Source Code</TooltipContent>
+            </Tooltip>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <ThemeSwitcher />
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

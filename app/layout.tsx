@@ -4,8 +4,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import Navbar from "@/components/navbar"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import RootLayoutClient from "./layout-client"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -33,16 +32,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider defaultTheme="system">
           <TooltipProvider>
-            <SidebarProvider>
-              <Navbar />
-              <main className="relative h-full min-h-svh w-full">
-                {children}
-                <SidebarTrigger
-                  className="absolute bottom-2 left-2 md:hidden"
-                  size={"lg"}
-                />
-              </main>
-            </SidebarProvider>
+            <RootLayoutClient>{children}</RootLayoutClient>
           </TooltipProvider>
         </ThemeProvider>
       </body>
