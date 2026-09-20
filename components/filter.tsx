@@ -1,40 +1,24 @@
 "use client"
 
-import { usePathState } from "@/hooks/use-path-state"
+import { useDataView } from "@/hooks/use-data-view"
 import { ReactNode } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 
 export default function Filter({
   children,
   className = "contents",
-  filters,
 }: {
   children: ReactNode
   className?: string
-  filters?: string[]
 }) {
-  const { searchParams, setState } = usePathState()
+  const { setState, pagination } = useDataView()
 
-  const form = useForm({
-    defaultValues: filters?.reduce(
-      (accumulator, key) => ({
-        ...accumulator,
-        [key]: searchParams.get(key) ?? "",
-      }),
-      {}
-    ),
-  })
+  const form = useForm()
 
-  const onSubmit = (data: Record<string, string>) => {
+  const onSubmit = (data: Record<string, string | null>) => {
     setState({
-      page: "1",
-      ...filters?.reduce(
-        (accumulator, key) => ({
-          ...accumulator,
-          [key]: data[key] ?? null,
-        }),
-        {}
-      ),
+      ...data,
+      ...(pagination ? { [pagination.param]: "1" } : {}),
     })
   }
 

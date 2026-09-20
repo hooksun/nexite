@@ -56,9 +56,15 @@ export default async function useSupabaseSelect<
   type QueryBuilder = {
     query: typeof query
     config: {
-      filterParams: string[]
-      paginated?: boolean
-      pageSize?: number
+      sorting?: {
+        param: string
+        sorting?: string[]
+      }
+      pagination?: {
+        param: string
+        page: number
+        pageSize: number
+      }
     }
     edit: (func: (q: typeof query) => typeof query) => QueryBuilder
     applyFilters: (param?: string) => QueryBuilder
@@ -91,12 +97,19 @@ export default async function useSupabaseSelect<
       return createBuilder(q, config)
     },
     applySorting: (param = "sort") => {
-      getSearchParams(params[param])?.forEach((sort) => {
+      const sorting = getSearchParams(params[param]) ?? undefined
+      sorting?.forEach((sort) => {
         const [column, dir] = sort.split(":", 2)
 
         q = q.order(column, { ascending: dir == "asc" })
       })
-      return createBuilder(q, config)
+      return createBuilder(q, {
+        ...config,
+        sorting: {
+          param,
+          sorting,
+        },
+      })
     },
     paginated: ({
       param = "page",
@@ -113,8 +126,7 @@ export default async function useSupabaseSelect<
         q.range((page - 1) * pageSize, page * pageSize - 1),
         {
           ...config,
-          paginated: true,
-          pageSize,
+          pagination: { param, page, pageSize },
         }
       )
     },
@@ -128,15 +140,12 @@ export default async function useSupabaseSelect<
         ) => {
           const paramValue = getSearchParams(params[param])
           if (paramValue == null) {
-            return createBuilder(q, {
-              ...config,
-              filterParams: [...config.filterParams, param],
-            })
+            return createBuilder(q, config)
           }
-          return createBuilder(value(q, column, transform(paramValue[0])), {
-            ...config,
-            filterParams: [...config.filterParams, param],
-          })
+          return createBuilder(
+            value(q, column, transform(paramValue[0])),
+            config
+          )
         },
       ])
     ) as Record<
@@ -149,7 +158,5 @@ export default async function useSupabaseSelect<
     >),
   })
 
-  return createBuilder(query, {
-    filterParams: [],
-  })
+  return createBuilder(query, {})
 }

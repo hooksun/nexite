@@ -22,7 +22,7 @@ import InputSearch from "./ui/input-search"
 import InputPrice, { InputPriceProps } from "./ui/input-price"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group"
 
-type FormInput = ({
+export type FormInput = ({
   field,
   fieldState,
   formState,

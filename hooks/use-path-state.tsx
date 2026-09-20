@@ -1,6 +1,6 @@
 "use client"
 
-import { useLoading } from "@/components/LoadingContext"
+import { useLoading } from "@/components/loading-context"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import {
   createContext,

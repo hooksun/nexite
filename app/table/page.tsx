@@ -1,6 +1,7 @@
 import useSupabaseSelect from "@/hooks/use-supabase-select"
 import TablePage from "./content"
 import { SearchParams } from "@/lib/utils"
+import { DataViewProvider } from "@/hooks/use-data-view"
 
 export default async function Page({
   searchParams,
@@ -14,5 +15,11 @@ export default async function Page({
     .applySorting()
     .paginated({ pageSize: 3 })
 
-  return <TablePage response={await builder.query} {...builder.config} />
+  // await new Promise((res) => setTimeout(res, 1000))
+
+  return (
+    <DataViewProvider response={await builder.query} {...builder.config}>
+      <TablePage />
+    </DataViewProvider>
+  )
 }

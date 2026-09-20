@@ -1,6 +1,4 @@
-"use client"
-
-import { Dispatch, HTMLAttributes, SetStateAction, useState } from "react"
+import { Dispatch, HTMLAttributes, SetStateAction } from "react"
 import {
   Pagination,
   PaginationContent,

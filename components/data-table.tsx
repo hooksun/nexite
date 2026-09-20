@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useEffect, useState } from "react"
+import { ColHTMLAttributes, ReactNode, useEffect, useState } from "react"
 import { Skeleton } from "./ui/skeleton"
 import {
   Table,
@@ -11,26 +11,29 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table"
-import { PostgrestSingleResponse } from "@supabase/supabase-js"
 import { Button } from "./ui/button"
 import {
   ArrowDown,
   ArrowDownUp,
   ArrowUp,
+  CircleOff,
   CircleX,
   RefreshCw,
 } from "lucide-react"
-import { usePathState } from "@/hooks/use-path-state"
 import { cn } from "cn"
-import { useLoading } from "./LoadingContext"
+import { useLoading } from "./loading-context"
 import Paginator from "./ui/paginator"
+import { useDataView } from "@/hooks/use-data-view"
 
-type TableColumn<T> = {
+export type TableColumn<T> = {
   header: ReactNode
   sortable?: boolean
   sortKey?: string
-  render: (row: T) => ReactNode
+  render: (row: T, rowState: { rowNumber: number }) => ReactNode
+  skeletonized?: boolean
   headerClassName?: string
+  cellClassName?: string
+  columnProps?: ColHTMLAttributes<HTMLTableColElement>
 }
 
 export function dataColumn<T extends Record<string, unknown>>(
@@ -46,25 +49,36 @@ export function dataColumn<T extends Record<string, unknown>>(
   } as TableColumn<T>
 }
 
+export function numberColumn<T extends Record<string, unknown>>(
+  options?: Partial<TableColumn<T>>
+) {
+  return {
+    header: "No",
+    sortable: false,
+    render: (_, { rowNumber }) => rowNumber,
+    cellClassName: "text-center",
+    columnProps: { className: "w-0 whitespace-nowrap" },
+    ...options,
+  } as TableColumn<T>
+}
+
 export default function DataTable<T extends Record<string, unknown>>({
   columns,
-  data = null,
-  error = null,
-  count = null,
-  paginated = true,
-  pageSize,
-  loadingRows = pageSize ?? 5,
+  loadingRows = 5,
+  getRowId = (_, { rowNumber }) => rowNumber,
 }: {
   columns: TableColumn<T>[]
-  paginated?: boolean
-  pageSize?: number
   loadingRows?: number
-} & Partial<PostgrestSingleResponse<T[]>>) {
-  const { searchParams, setState } = usePathState()
+  selectable?: boolean
+  getRowId?: (row: T, rowState: { rowNumber: number }) => string | number
+}) {
+  const { setState, pagination, sorting, response } = useDataView()
 
-  const [sortState, setSortState] = useState(searchParams.get("sort"))
+  const { data = null, error = null } = response ?? {}
 
   const [loading, setLoading] = useLoading()
+
+  const [sortState, setSortState] = useState(sorting?.sorting?.at(0) ?? null)
 
   const [sortColumn, sortDirection] = sortState?.split(":") ?? []
 
@@ -73,11 +87,12 @@ export default function DataTable<T extends Record<string, unknown>>({
 
     setSortState(value)
 
-    setState({ sort: value })
+    if (sorting) {
+      setState({ [sorting.param]: value })
+    }
   }
 
-  const pageParam = Number(searchParams.get("page")) || 1
-  const pageCount = paginated ? Math.ceil((count ?? 1) / (pageSize ?? 1)) : 1
+  const pageParam = Number(pagination?.page) || 1
   const [page, setPage] = useState(pageParam)
 
   useEffect(() => {
@@ -85,13 +100,65 @@ export default function DataTable<T extends Record<string, unknown>>({
   }, [pageParam])
 
   useEffect(() => {
-    if (page != pageParam) {
-      setState({ page: page.toString() })
+    if (pagination && page != pageParam) {
+      setState({ [pagination.param]: page.toString() })
     }
   }, [page])
 
+  const columnLength = columns.length
+
+  const getRowNumber = (index: number) =>
+    (pageParam - 1) * (pagination?.pageSize ?? 1) + index + 1
+
+  const errorState = (
+    <TableRow>
+      <TableCell colSpan={columnLength}>
+        <div className="flex flex-col items-center gap-4 p-8 text-center text-muted-foreground">
+          <CircleX className="text-destructive" />
+          Error encountered
+          <br />
+          {error?.message}
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setLoading(true)
+              setState({})
+            }}
+          >
+            <RefreshCw /> Reload
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  )
+
+  const emtpyState = (
+    <TableRow>
+      <TableCell colSpan={columnLength}>
+        <div className="flex flex-col items-center gap-4 p-8 text-center text-muted-foreground">
+          <CircleOff />
+          Data not found
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setLoading(true)
+              setState({})
+            }}
+          >
+            <RefreshCw /> Reload
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  )
+
   return (
     <Table>
+      <colgroup>
+        {columns.map((column, i) => (
+          <col key={i} {...column.columnProps} />
+        ))}
+      </colgroup>
       <TableHeader>
         <TableRow>
           {columns.map((column, i) => (
@@ -103,7 +170,7 @@ export default function DataTable<T extends Record<string, unknown>>({
                 )}
               >
                 {column.header}
-                {column.sortable && (
+                {sorting && column.sortable && (
                   <Button
                     className="ml-auto"
                     size="icon-xs"
@@ -134,60 +201,56 @@ export default function DataTable<T extends Record<string, unknown>>({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data == null && loading ? (
-          Array.from({ length: loadingRows }, (_, i) => (
-            <TableRow key={i}>
-              <TableCell colSpan={columns.length}>
-                <Skeleton className="h-5 rounded-full" />
-              </TableCell>
-            </TableRow>
-          ))
-        ) : error ? (
-          <TableRow>
-            <TableCell colSpan={columns.length}>
-              <div className="flex flex-col items-center gap-4 p-8 text-center text-muted-foreground">
-                <CircleX className="text-destructive" />
-                Error encountered
-                <br />
-                {error.message}
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setLoading(true)
-                    setState({})
-                  }}
-                >
-                  <RefreshCw /> Reload
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ) : (
-          data?.map((row, i) => (
-            <TableRow key={i}>
-              {columns.map((column, i) => (
-                <TableCell key={i}>
-                  <div className={cn("relative", loading && "invisible")}>
-                    {loading && (
-                      <Skeleton className="visible absolute h-full w-full rounded-full" />
-                    )}
-                    {column.render(row)}
-                  </div>
+        {(data?.length ?? 0) == 0 && loading
+          ? Array.from({ length: loadingRows }, (_, i) => (
+              <TableRow key={i}>
+                <TableCell colSpan={columnLength}>
+                  <Skeleton className="h-5 rounded-full" />
                 </TableCell>
-              ))}
-            </TableRow>
-          ))
-        )}
+              </TableRow>
+            ))
+          : error
+            ? errorState
+            : (data?.length ?? 0) == 0
+              ? emtpyState
+              : data?.map((row, i) => (
+                  <TableRow
+                    key={getRowId(row, {
+                      rowNumber: getRowNumber(i),
+                    })}
+                  >
+                    {columns.map((column, j) => (
+                      <TableCell key={j}>
+                        <div
+                          className={cn(
+                            "relative",
+                            loading &&
+                              column.skeletonized !== false &&
+                              "invisible",
+                            column.cellClassName
+                          )}
+                        >
+                          {loading && column.skeletonized !== false && (
+                            <Skeleton className="visible absolute h-full w-full rounded-full" />
+                          )}
+                          {column.render(row, {
+                            rowNumber: getRowNumber(i),
+                          })}
+                        </div>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
       </TableBody>
-      {paginated && pageCount > 1 && (
+      {pagination && pagination.pageCount > 1 && (
         <TableFooter>
           <TableRow>
-            <TableCell colSpan={columns.length}>
+            <TableCell colSpan={columnLength}>
               <Paginator
                 className="justify-end"
                 page={page}
                 setPage={setPage}
-                pageCount={pageCount}
+                pageCount={pagination.pageCount}
               />
             </TableCell>
           </TableRow>

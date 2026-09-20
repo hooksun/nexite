@@ -2,12 +2,11 @@
 
 import { RefreshCw } from "lucide-react"
 import { Button } from "./button"
-import { usePathState } from "@/hooks/use-path-state"
 import { ButtonProps } from "@base-ui/react"
-import { cn } from "cn"
+import { useDataView } from "@/hooks/use-data-view"
 
 export default function ButtonRefresh(props: ButtonProps) {
-  const { setState } = usePathState()
+  const { setState } = useDataView()
 
   return (
     <Button
