@@ -1,6 +1,5 @@
 "use client"
 
-import { useLoading } from "@/components/loading-context"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import {
   createContext,
@@ -59,8 +58,6 @@ export function usePathState() {
 
   const { update } = useContext(PathStateContext)
 
-  const [_, setLoading] = useLoading()
-
   useEffect(() => {
     const currentQuery = searchParams.toString()
     if (currentQuery != localStorage.getItem(storageKey + pathname)) {
@@ -79,8 +76,6 @@ export function usePathState() {
         newParams.delete(key)
       }
     })
-
-    setLoading(true)
 
     localStorage.setItem(storageKey + pathname, newParams.toString())
     update()

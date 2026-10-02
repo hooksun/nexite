@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -11,13 +11,26 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from "./ui/sidebar"
 import { ThemeSwitcher } from "./theme-switcher"
-import { CodeXml, FileTextIcon, Home, Table2, X } from "lucide-react"
+import {
+  ChevronDown,
+  CodeXml,
+  FileTextIcon,
+  Home,
+  Table2,
+  X,
+} from "lucide-react"
 import Link from "next/link"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 import { usePath } from "@/hooks/use-path-state"
+import { cn } from "cn"
+import { Collapsible, CollapsibleContent } from "./ui/collapsible"
+import { usePathname } from "next/navigation"
 
 function NavbarMenu({
   icon,
@@ -41,7 +54,7 @@ function NavbarMenu({
                 {label}
               </Link>
             }
-          ></SidebarMenuButton>
+          />
         </SidebarMenuItem>
       </TooltipTrigger>
       <TooltipContent side="right">{label}</TooltipContent>
@@ -52,7 +65,18 @@ function NavbarMenu({
 export default function Navbar() {
   const { setOpen, setOpenMobile, state, isMobile } = useSidebar()
 
+  const pathName = usePathname()
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }, [pathName])
+
+  const [openTableSub, setOpenTableSub] = useState(true)
+
   const path = usePath()
+
+  const showTooltip = state == "collapsed" && !isMobile
 
   return (
     <Sidebar collapsible="icon" onClick={() => setOpen(true)}>
@@ -76,19 +100,73 @@ export default function Navbar() {
               icon={<Home />}
               label="Home"
               path={path("/")}
-              showTooltip={state == "collapsed" && !isMobile}
+              showTooltip={showTooltip}
             />
+            <SidebarMenuItem>
+              <Collapsible open={openTableSub} onOpenChange={setOpenTableSub}>
+                <Tooltip>
+                  <TooltipTrigger
+                    disabled={!showTooltip}
+                    render={
+                      <SidebarMenuButton
+                        onClick={() => {
+                          if (state == "collapsed" && !isMobile) {
+                            setOpen(true)
+                            setOpenTableSub(true)
+                          } else {
+                            setOpenTableSub((b) => !b)
+                          }
+                        }}
+                      >
+                        <Table2 />
+                        Table
+                        <ChevronDown
+                          className={cn(
+                            "ml-auto transition-all",
+                            openTableSub && "rotate-180"
+                          )}
+                        />
+                      </SidebarMenuButton>
+                    }
+                  />
+                  <TooltipContent side="right">Table</TooltipContent>
+                </Tooltip>
+
+                <CollapsibleContent animated>
+                  <SidebarMenuSub
+                  // for animation without collapsible
+                  // className={cn(
+                  //   "overflow-hidden transition-all",
+                  //   !openTableSub && "py-0"
+                  // )}
+                  >
+                    <SidebarMenuSubItem
+                    // for animation without collapsible
+                    // className={cn("transition-all", !openTableSub && "-mt-8")}
+                    >
+                      <SidebarMenuSubButton
+                        render={<Link href={path("/table")}>Simple</Link>}
+                      />
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem
+                    // for animation without collapsible
+                    // className={cn("transition-all", !openTableSub && "-mt-8")}
+                    >
+                      <SidebarMenuSubButton
+                        render={
+                          <Link href={path("/table-sandbox")}>Sandbox</Link>
+                        }
+                      />
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarMenuItem>
             <NavbarMenu
               icon={<FileTextIcon />}
               label="Form"
               path={path("/form")}
-              showTooltip={state == "collapsed" && !isMobile}
-            />
-            <NavbarMenu
-              icon={<Table2 />}
-              label="Table"
-              path={path("/table")}
-              showTooltip={state == "collapsed" && !isMobile}
+              showTooltip={showTooltip}
             />
           </SidebarMenu>
         </SidebarGroup>

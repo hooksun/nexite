@@ -1,65 +1,118 @@
 "use client"
 
-import Filter from "@/components/filter"
-import { Button } from "@/components/ui/button"
-import ButtonRefresh from "@/components/ui/button-refresh"
-import { Card, CardContent } from "@/components/ui/card"
-import DataTable, { dataColumn, numberColumn } from "@/components/data-table"
+import DataTable from "@/components/data-table"
 import { Search } from "lucide-react"
-import ButtonClear from "@/components/ui/button-clear"
 import FilterField from "@/components/filter-field"
-import { formInput } from "@/components/form-field"
-import useSelectColumn from "@/hooks/use-select-column"
+import { formInput } from "@/components/form-inputs"
+import { dataColumn, numberColumn } from "@/components/data-table-columns"
+import {
+  FilterDateRange,
+  FilterForm,
+  FilterRange,
+} from "@/components/data-table-filters"
 
 export default function TablePage() {
-  const { selected, column: selectColumn } = useSelectColumn({
-    getRowId: (data: any) => data.id,
-  })
-
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <Card className="p-0">
-        <CardContent className="flex flex-wrap gap-2 p-2">
-          <Filter>
-            <FilterField
-              name="startDate"
-              label="Start"
-              className="flex-1"
-              submitOnChange
-              render={formInput({ type: "date" })}
-            />
-            <FilterField
-              name="endDate"
-              label="End"
-              className="flex-1"
-              submitOnChange
-              render={formInput({ type: "date" })}
-            />
-            <FilterField
-              name="name"
-              className="flex-1"
-              render={formInput({
-                type: "search",
-                left: <Search />,
-                placeholder: "Name",
-              })}
-            />
-            <ButtonClear />
-            <ButtonRefresh />
-            <Button type="submit">Submit</Button>
-          </Filter>
-        </CardContent>
-      </Card>
+    <div className="flex max-h-dvh flex-col gap-6 p-6">
       <DataTable
         columns={[
-          selectColumn,
           numberColumn(),
-          dataColumn("date"),
-          dataColumn("name"),
+          dataColumn("date", {
+            filter: (
+              <FilterDateRange startParam="start-date" endParam="end-date" />
+            ),
+          }),
+          dataColumn("name", {
+            filter: (
+              <FilterForm>
+                <FilterField
+                  name="name"
+                  render={formInput({ left: <Search />, clear: true })}
+                />
+              </FilterForm>
+            ),
+          }),
+          dataColumn("email", {
+            filter: (
+              <FilterForm>
+                <FilterField
+                  name="email"
+                  render={formInput({ left: <Search />, clear: true })}
+                />
+              </FilterForm>
+            ),
+          }),
+          dataColumn("age", {
+            renderFooter: ({ aggregate }) =>
+              Number(aggregate?.at(0)?.avg_age.toFixed(2)),
+            filter: <FilterRange startParam="start-age" endParam="end-age" />,
+          }),
+          dataColumn("gender"),
+          dataColumn("salary", {
+            headerClassName: "justify-end",
+            cellClassName: "text-right",
+            footerClassName: "text-right",
+            render: (row) => `$ ${row.salary}`,
+            renderFooter: ({ aggregate }) =>
+              `$ ${aggregate?.at(0)?.avg_salary.toFixed(2)}`,
+            filter: (
+              <FilterRange startParam="start-salary" endParam="end-salary" />
+            ),
+          }),
+          dataColumn("company", {
+            filter: (
+              <FilterForm>
+                <FilterField
+                  name="company"
+                  render={formInput({ left: <Search />, clear: true })}
+                />
+              </FilterForm>
+            ),
+          }),
+          dataColumn("occupation", {
+            filter: (
+              <FilterForm>
+                <FilterField
+                  name="occupation"
+                  render={formInput({ left: <Search />, clear: true })}
+                />
+              </FilterForm>
+            ),
+          }),
+          dataColumn("education", {
+            filter: (
+              <FilterForm>
+                <FilterField
+                  name="education"
+                  render={formInput({ left: <Search />, clear: true })}
+                />
+              </FilterForm>
+            ),
+          }),
+          dataColumn("skill", {
+            filter: (
+              <FilterForm>
+                <FilterField
+                  name="skill"
+                  render={formInput({ left: <Search />, clear: true })}
+                />
+              </FilterForm>
+            ),
+          }),
         ]}
+        footerLabel="Average"
         getRowId={(row) => row.id as string | number}
       />
-      {/* Selected: {selected.size} */}
+      <div className="text-muted-foreground">
+        Data generated using{" "}
+        <a
+          className="cursor-pointer hover:underline"
+          target="_blank"
+          href="https://www.mockaroo.com"
+        >
+          https://www.mockaroo.com
+        </a>
+      </div>
     </div>
   )
 }

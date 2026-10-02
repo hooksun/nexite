@@ -1,6 +1,6 @@
 "use client"
 
-import { ColHTMLAttributes, ReactNode, useEffect, useState } from "react"
+import { ReactNode, useEffect, useMemo, useState } from "react"
 import { Skeleton } from "./ui/skeleton"
 import {
   Table,
@@ -13,9 +13,9 @@ import {
 } from "./ui/table"
 import { Button } from "./ui/button"
 import {
-  ArrowDown,
+  ArrowDownNarrowWide,
   ArrowDownUp,
-  ArrowUp,
+  ArrowUpWideNarrow,
   CircleOff,
   CircleX,
   RefreshCw,
@@ -24,57 +24,28 @@ import { cn } from "cn"
 import { useLoading } from "./loading-context"
 import Paginator from "./ui/paginator"
 import { useDataView } from "@/hooks/use-data-view"
-
-export type TableColumn<T> = {
-  header: ReactNode
-  sortable?: boolean
-  sortKey?: string
-  render: (row: T, rowState: { rowNumber: number }) => ReactNode
-  skeletonized?: boolean
-  headerClassName?: string
-  cellClassName?: string
-  columnProps?: ColHTMLAttributes<HTMLTableColElement>
-}
-
-export function dataColumn<T extends Record<string, unknown>>(
-  key: string,
-  options?: Partial<TableColumn<T>>
-) {
-  return {
-    header: key,
-    sortable: true,
-    sortKey: key,
-    render: (row) => row[key],
-    ...options,
-  } as TableColumn<T>
-}
-
-export function numberColumn<T extends Record<string, unknown>>(
-  options?: Partial<TableColumn<T>>
-) {
-  return {
-    header: "No",
-    sortable: false,
-    render: (_, { rowNumber }) => rowNumber,
-    cellClassName: "text-center",
-    columnProps: { className: "w-0 whitespace-nowrap" },
-    ...options,
-  } as TableColumn<T>
-}
+import { TableColumn } from "./data-table-columns"
+import ButtonRefresh from "./ui/button-refresh"
 
 export default function DataTable<T extends Record<string, unknown>>({
   columns,
-  loadingRows = 5,
-  getRowId = (_, { rowNumber }) => rowNumber,
+  loadingRows = 10,
+  footerLabel,
+  errorState,
+  emptyState,
+  getRowId,
 }: {
   columns: TableColumn<T>[]
   loadingRows?: number
   selectable?: boolean
-  getRowId?: (row: T, rowState: { rowNumber: number }) => string | number
+  footerLabel?: ReactNode
+  errorState?: ReactNode
+  emptyState?: ReactNode
+  getRowId?: (row: T) => string | number
 }) {
   const { setState, pagination, sorting, response } = useDataView()
 
-  const { data = null, error = null } = response ?? {}
+  const { data = null, errors = null } = response ?? {}
 
   const [loading, setLoading] = useLoading()
 
@@ -110,71 +81,91 @@ export default function DataTable<T extends Record<string, unknown>>({
   const getRowNumber = (index: number) =>
     (pageParam - 1) * (pagination?.pageSize ?? 1) + index + 1
 
-  const errorState = (
-    <TableRow>
-      <TableCell colSpan={columnLength}>
-        <div className="flex flex-col items-center gap-4 p-8 text-center text-muted-foreground">
-          <CircleX className="text-destructive" />
-          Error encountered
-          <br />
-          {error?.message}
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setLoading(true)
-              setState({})
-            }}
-          >
-            <RefreshCw /> Reload
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
+  const defaultErrorState = (
+    <div className="flex flex-col items-center gap-4 p-8 text-center text-muted-foreground">
+      <CircleX className="text-destructive" />
+      Error encountered
+      <br />
+      {errors?.at(0)?.message}
+      <Button
+        variant="secondary"
+        onClick={() => {
+          setLoading(true)
+          setState({})
+        }}
+      >
+        <RefreshCw /> Reload
+      </Button>
+    </div>
   )
 
-  const emtpyState = (
-    <TableRow>
-      <TableCell colSpan={columnLength}>
-        <div className="flex flex-col items-center gap-4 p-8 text-center text-muted-foreground">
-          <CircleOff />
-          Data not found
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setLoading(true)
-              setState({})
-            }}
-          >
-            <RefreshCw /> Reload
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
+  const defaultEmtpyState = (
+    <div className="flex flex-col items-center gap-4 p-8 text-center text-muted-foreground">
+      <CircleOff />
+      Data not found
+      <ButtonRefresh size="default" variant="secondary">
+        Reload
+      </ButtonRefresh>
+    </div>
   )
+
+  const footer = useMemo(() => {
+    const first = columns.findIndex((col) => col.renderFooter)
+
+    if (first == -1 || !response) {
+      return undefined
+    }
+
+    return (
+      <TableRow>
+        <TableCell colSpan={first} className="p-0">
+          <div className="sticky left-0 w-fit p-2">{footerLabel}</div>
+        </TableCell>
+        {columns
+          .filter((_, i) => i >= first)
+          .map((col, i) => (
+            <TableCell key={i}>
+              <div className={col.footerClassName}>
+                {col.renderFooter && col.renderFooter(response)}
+              </div>
+            </TableCell>
+          ))}
+      </TableRow>
+    )
+  }, [columns, response])
 
   return (
     <Table>
       <colgroup>
         {columns.map((column, i) => (
-          <col key={i} {...column.columnProps} />
+          <col
+            key={i}
+            {...column.columnProps}
+            className={cn(
+              column.shrink && "w-0 whitespace-nowrap",
+              column.columnProps?.className
+            )}
+          />
         ))}
       </colgroup>
-      <TableHeader>
+      <TableHeader className="sticky top-0 z-1 bg-background">
         <TableRow>
           {columns.map((column, i) => (
             <TableHead key={i}>
               <div
                 className={cn(
-                  "flex items-baseline capitalize",
+                  "flex w-full items-center gap-2 capitalize",
                   column.headerClassName
                 )}
               >
                 {column.header}
-                {sorting && column.sortable && (
+                {column.filter}
+                {column.sortable && (
                   <Button
-                    className="ml-auto"
                     size="icon-xs"
-                    variant={sortColumn == column.sortKey ? "default" : "ghost"}
+                    variant={
+                      sortColumn == column.sortKey ? "default" : "secondary"
+                    }
                     onClick={() =>
                       setSort(
                         sortColumn == column.sortKey && sortDirection == "desc"
@@ -189,9 +180,9 @@ export default function DataTable<T extends Record<string, unknown>>({
                     {sortColumn != column.sortKey ? (
                       <ArrowDownUp />
                     ) : sortDirection == "asc" ? (
-                      <ArrowUp />
+                      <ArrowUpWideNarrow className="-scale-x-100" />
                     ) : (
-                      <ArrowDown />
+                      <ArrowDownNarrowWide />
                     )}
                   </Button>
                 )}
@@ -201,61 +192,73 @@ export default function DataTable<T extends Record<string, unknown>>({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {(data?.length ?? 0) == 0 && loading
-          ? Array.from({ length: loadingRows }, (_, i) => (
-              <TableRow key={i}>
-                <TableCell colSpan={columnLength}>
-                  <Skeleton className="h-5 rounded-full" />
-                </TableCell>
-              </TableRow>
-            ))
-          : error
-            ? errorState
-            : (data?.length ?? 0) == 0
-              ? emtpyState
-              : data?.map((row, i) => (
-                  <TableRow
-                    key={getRowId(row, {
-                      rowNumber: getRowNumber(i),
-                    })}
-                  >
-                    {columns.map((column, j) => (
-                      <TableCell key={j}>
-                        <div
-                          className={cn(
-                            "relative",
-                            loading &&
-                              column.skeletonized !== false &&
-                              "invisible",
-                            column.cellClassName
-                          )}
-                        >
-                          {loading && column.skeletonized !== false && (
-                            <Skeleton className="visible absolute h-full w-full rounded-full" />
-                          )}
-                          {column.render(row, {
-                            rowNumber: getRowNumber(i),
-                          })}
-                        </div>
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-      </TableBody>
-      {pagination && pagination.pageCount > 1 && (
-        <TableFooter>
+        {(data?.length ?? 0) == 0 && loading ? (
+          Array.from({ length: loadingRows }, (_, i) => (
+            <TableRow key={i}>
+              <TableCell colSpan={columnLength}>
+                <Skeleton className="h-5 rounded-full" />
+              </TableCell>
+            </TableRow>
+          ))
+        ) : errors ? (
           <TableRow>
             <TableCell colSpan={columnLength}>
-              <Paginator
-                className="justify-end"
-                page={page}
-                setPage={setPage}
-                pageCount={pagination.pageCount}
-              />
+              {errorState ?? defaultErrorState}
             </TableCell>
           </TableRow>
-        </TableFooter>
-      )}
+        ) : (data?.length ?? 0) == 0 ? (
+          <TableRow>
+            <TableCell colSpan={columnLength}>
+              {emptyState ?? defaultEmtpyState}
+            </TableCell>
+          </TableRow>
+        ) : (
+          data?.map((row, i) => (
+            <TableRow key={getRowId ? getRowId(row) : getRowNumber(i)}>
+              {columns.map((column, j) => (
+                <TableCell key={j}>
+                  <div
+                    className={cn(
+                      "relative",
+                      loading && column.skeletonized !== false && "invisible",
+                      column.cellClassName
+                    )}
+                  >
+                    {loading && column.skeletonized !== false && (
+                      <Skeleton className="visible absolute h-full w-full rounded-full" />
+                    )}
+                    {column.render(row, {
+                      rowNumber: getRowNumber(i),
+                      loading,
+                    })}
+                  </div>
+                </TableCell>
+              ))}
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+      {(!!footer || (pagination && pagination.pageCount > 1)) &&
+        (data?.length ?? 0) > 0 && (
+          <TableFooter className="sticky bottom-0 bg-background">
+            {footer}
+            {pagination && pagination.pageCount > 1 && (
+              <TableRow>
+                <TableCell colSpan={columnLength} className="p-0">
+                  <div className="flex w-full justify-end">
+                    <Paginator
+                      className="sticky right-0 mx-0 w-fit p-2"
+                      page={page}
+                      setPage={setPage}
+                      pageCount={pagination.pageCount}
+                    />
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+            <TableRow className="absolute top-0 right-0 bottom-0 left-0 -z-1 bg-muted/50" />
+          </TableFooter>
+        )}
     </Table>
   )
 }

@@ -1,79 +1,88 @@
 "use client"
 
-import { TextareaHTMLAttributes, useRef, useState } from "react"
-import { InputGroup, InputGroupAddon, InputGroupTextarea } from "./input-group"
-import { Badge } from "./badge"
-import { CircleX } from "lucide-react"
+import { ReactNode, useRef, useState } from "react"
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from "./combobox"
+import { OptionState } from "./input-select"
 import { cn } from "cn"
-import { Popover, PopoverContent } from "./popover"
+import { Spinner } from "./spinner"
 
-export default function InputSearch<O>({
-  value,
-  onChange,
-  ...props
-}: {
+export type InputSearchProps = {
   value: string[] | null
   onChange: (value: string[] | null) => unknown
-} & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange">) {
+  onChangeQuery?: (value: string) => unknown
+  options?: string[]
+  renderOption?: (option: string) => ReactNode
+  optionState?: OptionState
+  autoHighlight?: boolean
+} & Omit<Parameters<typeof ComboboxChipsInput>[0], "value" | "onChange">
+
+export default function InputSearch({
+  value,
+  onChange,
+  onChangeQuery,
+  options,
+  renderOption = (o) => o,
+  optionState = "success",
+  autoHighlight = true,
+  ...props
+}: InputSearchProps) {
+  const anchor = useComboboxAnchor()
   const [query, setQuery] = useState("")
-  const [open, setOpen] = useState(false)
-
-  const anchor = useRef<HTMLDivElement>(null)
-
-  const addValue = (added: string) => {
-    onChange([...(value ?? []), added])
-  }
-
-  const removeAt = (index: number) => {
-    onChange(value?.toSpliced(index, 1) ?? null)
-  }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <InputGroup className="flex-wrap" ref={anchor}>
-        {value?.map((val, i) => (
-          <InputGroupAddon key={i}>
-            <Badge
-              className="cursor-pointer"
-              variant="secondary"
-              onClick={() => removeAt(i)}
-            >
-              {val}
-              <CircleX />
-            </Badge>
-          </InputGroupAddon>
-        ))}
-        <InputGroupTextarea
-          rows={1}
-          {...props}
-          className={cn(
-            "min-h-auto min-w-fit flex-1 text-nowrap",
-            props?.className
+    <Combobox
+      autoHighlight={autoHighlight}
+      multiple
+      value={value ?? []}
+      onValueChange={onChange}
+      items={options}
+      inputValue={query}
+      onInputValueChange={(value) => {
+        setQuery(value)
+        onChangeQuery && onChangeQuery(value)
+      }}
+    >
+      <ComboboxChips ref={anchor}>
+        <ComboboxValue>
+          {value?.map((item, i) => (
+            <ComboboxChip key={i}>{item}</ComboboxChip>
+          ))}
+        </ComboboxValue>
+        <ComboboxChipsInput {...props} />
+      </ComboboxChips>
+      <ComboboxContent anchor={anchor}>
+        <ComboboxEmpty
+          className={cn("p-4", optionState == "error" && "text-destructive")}
+        >
+          {optionState == "error" ? (
+            "An error occured"
+          ) : optionState == "loading" ? (
+            <Spinner />
+          ) : (options?.length ?? 0) == 0 ? (
+            "Search Items"
+          ) : (
+            "No items found"
           )}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault()
-              addValue(query)
-              setQuery("")
-            }
-          }}
-          value={query}
-          onChange={(e) => {
-            setOpen(e.target.value != "")
-            setQuery(e.target.value)
-          }}
-          onFocus={() => setOpen(query != "")}
-        />
-      </InputGroup>
-
-      <PopoverContent
-        anchor={anchor}
-        initialFocus={false}
-        finalFocus={false}
-        className="w-(--anchor-width)"
-      >
-        searching...
-      </PopoverContent>
-    </Popover>
+        </ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
+              {renderOption(item)}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   )
 }

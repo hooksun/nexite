@@ -1,7 +1,6 @@
 "use client"
 
 import { LoadingContext } from "@/components/loading-context"
-import { PostgrestSingleResponse } from "@supabase/supabase-js"
 import {
   createContext,
   ReactNode,
@@ -10,9 +9,10 @@ import {
   useState,
 } from "react"
 import { usePathState } from "./use-path-state"
+import { SupabaseSelectResponse } from "./use-supabase-select"
 
 const dataViewContext = createContext<{
-  response?: PostgrestSingleResponse<any[]>
+  response?: SupabaseSelectResponse<any[]>
   sorting?: {
     param: string
     sorting?: string[]
@@ -22,7 +22,10 @@ const dataViewContext = createContext<{
     page: number
     pageSize: number
   }
-  setState: (state: Record<string, string | null>) => unknown
+  setState: (
+    state: Record<string, string | null>,
+    resetPagination?: boolean
+  ) => unknown
 }>({
   setState: () => {},
 })
@@ -33,7 +36,7 @@ export function DataViewProvider({
   stateType = "path-state",
   ...props
 }: {
-  response?: PostgrestSingleResponse<any[]>
+  response?: SupabaseSelectResponse<any[]>
   sorting?: {
     param: string
     sorting?: string[]
@@ -61,9 +64,12 @@ export function DataViewProvider({
     <dataViewContext.Provider
       value={{
         ...props,
-        setState: (state) => {
+        setState: (state, resetPagination = true) => {
           loadingState[1](true)
-          setState(state)
+          setState({
+            ...(resetPagination ? { page: null } : {}),
+            ...state,
+          })
         },
       }}
     >

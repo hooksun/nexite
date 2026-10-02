@@ -2,136 +2,65 @@
 
 import {
   Controller,
-  ControllerFieldState,
-  ControllerRenderProps,
+  FieldPath,
   FieldValues,
   UseControllerProps,
-  UseFormStateReturn,
 } from "react-hook-form"
 import { Field, FieldDescription, FieldError, FieldLabel } from "./ui/field"
-import {
-  InputHTMLAttributes,
-  ReactNode,
-  TextareaHTMLAttributes,
-  useId,
-} from "react"
-import InputPassword from "./ui/input-password"
-import InputSelect, { InputSelectProps } from "./ui/input-select"
-import { Optional } from "@/lib/utils"
-import InputSearch from "./ui/input-search"
-import InputPrice, { InputPriceProps } from "./ui/input-price"
-import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group"
+import { ReactNode, useId } from "react"
+import { cn } from "@/lib/utils"
+import { FormInput, formInput } from "./form-inputs"
 
-export type FormInput = ({
-  field,
-  fieldState,
-  formState,
-  id,
-}: {
-  field: ControllerRenderProps<FieldValues, string>
-  fieldState: ControllerFieldState
-  formState: UseFormStateReturn<FieldValues>
-  id: string
-}) => React.ReactElement
-
-export function formInput({
-  left,
-  right,
-  ...props
-}: {
-  left?: ReactNode
-  right?: ReactNode
-} & InputHTMLAttributes<HTMLInputElement> = {}): FormInput {
-  return ({ field, id }) => (
-    <InputGroup>
-      {left && <InputGroupAddon>{left}</InputGroupAddon>}
-      <InputGroupInput
-        id={id}
-        {...props}
-        {...field}
-        value={field.value ?? ""}
-      />
-      {right && <InputGroupAddon align="inline-end">{right}</InputGroupAddon>}
-    </InputGroup>
-  )
-}
-
-export function passwordInput(
-  props?: InputHTMLAttributes<HTMLInputElement>
-): FormInput {
-  return ({ field, id }) => (
-    <InputPassword id={id} {...props} {...field} value={field.value ?? ""} />
-  )
-}
-
-export function priceInput(props?: InputPriceProps): FormInput {
-  return ({ field, id }) => (
-    <InputPrice id={id} {...props} {...field} value={field.value ?? ""} />
-  )
-}
-
-export function selectInput<V, O>(
-  props: Omit<InputSelectProps<V, O>, "value" | "onChange">
-): FormInput {
-  return ({ field, id }) => <InputSelect id={id} {...props} {...field} />
-}
-
-export function selectString({
-  optionToValue = (o) => o,
-  renderOption = (o) => o,
-  renderValue = (v) => v,
-  ...props
-}: Optional<
-  Omit<InputSelectProps<string, string>, "value" | "onChange">,
-  "optionToValue" | "renderOption" | "renderValue"
->): FormInput {
-  return ({ field, id }) => (
-    <InputSelect
-      id={id}
-      optionToValue={optionToValue}
-      renderOption={renderOption}
-      renderValue={renderValue}
-      {...props}
-      {...field}
-    />
-  )
-}
-
-export function searchInput(
-  props?: TextareaHTMLAttributes<HTMLTextAreaElement>
-): FormInput {
-  return ({ field, id }) => <InputSearch id={id} {...props} {...field} />
-}
-
-export default function FormField({
+export default function FormField<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+  TTransformedValues = TFieldValues,
+>({
   name,
   label = name,
   description,
   className,
+  rules,
+  required = rules != undefined,
+  orientation,
   render = formInput(),
   ...props
 }: {
   label?: ReactNode
   description?: ReactNode
   className?: string
-  render?: FormInput
-} & UseControllerProps) {
+  required?: boolean
+  orientation?: "vertical" | "horizontal" | "responsive" | null
+  render?: FormInput<TFieldValues, TName>
+} & UseControllerProps<TFieldValues, TName, TTransformedValues>) {
   const id = useId()
   return (
     <Controller
       name={name}
+      rules={rules}
       {...props}
       render={({ field, fieldState, formState }) => (
-        <Field data-invalid={fieldState.invalid} className={className}>
+        <Field
+          data-invalid={fieldState.invalid}
+          className={cn("relative gap-1 pb-1", className)}
+          orientation={orientation}
+        >
           {label && (
             <FieldLabel htmlFor={id} className="capitalize">
               {label}
+              {required && <span className="text-destructive">*</span>}
             </FieldLabel>
           )}
+          {description && (
+            <FieldDescription className="in-data-vertical:-mt-1">
+              {description}
+            </FieldDescription>
+          )}
           {render({ field, fieldState, formState, id })}
-          {description && <FieldDescription>{description}</FieldDescription>}
           {fieldState.invalid && (
-            <FieldError>{fieldState.error?.message}</FieldError>
+            <FieldError className={cn("absolute top-full text-xs")}>
+              {fieldState.error?.message}
+            </FieldError>
           )}
         </Field>
       )}

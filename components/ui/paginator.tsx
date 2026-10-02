@@ -2,12 +2,12 @@ import { Dispatch, HTMLAttributes, SetStateAction } from "react"
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "./pagination"
+import { ChevronsLeft, ChevronsRight } from "lucide-react"
 
 export default function Paginator({
   page,
@@ -39,10 +39,25 @@ export default function Paginator({
 
         {Array.from({ length }, (_, i) => {
           const curr = i + startPage
-          if ((i == 0 && curr > 1) || (i == length - 1 && curr < pageCount)) {
+          if (i == 0 && curr > 1) {
             return (
-              <PaginationItem key={curr}>
-                <PaginationEllipsis />
+              <PaginationItem key={1}>
+                <PaginationLink onClick={() => setPage(1)} isActive={1 == page}>
+                  <ChevronsLeft />
+                </PaginationLink>
+              </PaginationItem>
+            )
+          }
+
+          if (i == length - 1 && curr < pageCount) {
+            return (
+              <PaginationItem key={pageCount}>
+                <PaginationLink
+                  onClick={() => setPage(pageCount)}
+                  isActive={pageCount == page}
+                >
+                  <ChevronsRight />
+                </PaginationLink>
               </PaginationItem>
             )
           }

@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "./button"
-import { ButtonProps } from "@base-ui/react"
 import { useDataView } from "@/hooks/use-data-view"
 import { cn } from "cn"
 import { useFormContext } from "react-hook-form"
@@ -9,7 +8,7 @@ import { useFormContext } from "react-hook-form"
 export default function ButtonClear({
   children = "Clear Filters",
   ...props
-}: ButtonProps) {
+}: Parameters<typeof Button>[0]) {
   const { setState, pagination } = useDataView()
   const { getValues, setValues } = useFormContext()
 

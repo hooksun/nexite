@@ -11,14 +11,13 @@ export default function Filter({
   children: ReactNode
   className?: string
 }) {
-  const { setState, pagination } = useDataView()
+  const { setState } = useDataView()
 
   const form = useForm()
 
   const onSubmit = (data: Record<string, string | null>) => {
     setState({
       ...data,
-      ...(pagination ? { [pagination.param]: "1" } : {}),
     })
   }
 

@@ -1,21 +1,17 @@
 "use client"
 
-import { TableColumn } from "@/components/data-table"
 import { useEffect, useState } from "react"
 import { useDataView } from "./use-data-view"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useLoading } from "@/components/loading-context"
+import { TableColumn } from "@/components/data-table-columns"
 
-export default function useSelectColumn<
-  T extends unknown,
-  D extends string | number,
->({
+export default function useSelectColumn<T, D extends string | number>({
   getRowId,
-  options,
+  ...options
 }: {
   getRowId: (row: T) => D
-  options?: Partial<TableColumn<T>>
-}): {
+} & Partial<TableColumn<T>>): {
   selected: Set<D>
   column: TableColumn<T>
 } {
@@ -66,7 +62,7 @@ export default function useSelectColumn<
           onCheckedChange={(checked) => setRowSelected(getRowId(row), checked)}
         />
       ),
-      columnProps: { className: "w-0 whitespace-nowrap" },
+      shrink: true,
       skeletonized: false,
       ...options,
     },

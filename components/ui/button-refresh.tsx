@@ -2,10 +2,9 @@
 
 import { RefreshCw } from "lucide-react"
 import { Button } from "./button"
-import { ButtonProps } from "@base-ui/react"
 import { useDataView } from "@/hooks/use-data-view"
 
-export default function ButtonRefresh(props: ButtonProps) {
+export default function ButtonRefresh(props: Parameters<typeof Button>[0]) {
   const { setState } = useDataView()
 
   return (
@@ -16,6 +15,7 @@ export default function ButtonRefresh(props: ButtonProps) {
       onClick={() => setState({})}
     >
       <RefreshCw />
+      {props.children}
     </Button>
   )
 }

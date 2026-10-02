@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import RootLayoutClient from "./layout-client"
+import { AlertDialogProvider } from "@/hooks/use-alert-dialog"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -29,10 +30,12 @@ export default function RootLayout({
         geist.variable
       )}
     >
-      <body>
+      <body className="relative">
         <ThemeProvider defaultTheme="system">
           <TooltipProvider>
-            <RootLayoutClient>{children}</RootLayoutClient>
+            <AlertDialogProvider>
+              <RootLayoutClient>{children}</RootLayoutClient>
+            </AlertDialogProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>

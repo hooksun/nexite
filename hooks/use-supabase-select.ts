@@ -1,6 +1,14 @@
 import { createClient } from "@/lib/supabase/server"
 import { Database } from "@/lib/supabase/supabase-types"
 import { SearchParams } from "@/lib/utils"
+import { PostgrestError, QueryData } from "@supabase/supabase-js"
+
+export type SupabaseSelectResponse<D> = {
+  data: D | null
+  aggregate: any[] | null | undefined
+  count: number | null
+  errors: PostgrestError[] | null
+}
 
 const getSearchParams = (key: string | string[] | undefined) =>
   Array.isArray(key) ? key : key ? [key] : null
@@ -16,6 +24,7 @@ export default async function useSupabaseSelect<
     searchParams,
     select = defaultSelect,
     options = { count: "exact", head: false },
+    aggregateSelect,
   }: {
     searchParams?: Promise<SearchParams>
     select?: S | typeof defaultSelect
@@ -23,12 +32,16 @@ export default async function useSupabaseSelect<
       head?: boolean | undefined
       count?: (string & {}) | "exact" | "planned" | "estimated" | undefined
     }
+    aggregateSelect?: string
   }
 ) {
   const params = (await searchParams) ?? {}
   const supabase = await createClient()
 
   let query = supabase.from(table).select(select, options)
+  let aggregateQuery = aggregateSelect
+    ? supabase.from(table).select(aggregateSelect)
+    : undefined
 
   const Filters = {
     eq: (q, column, value) => q.eq(column as any, value),
@@ -55,6 +68,8 @@ export default async function useSupabaseSelect<
 
   type QueryBuilder = {
     query: typeof query
+    aggregateQuery: typeof query | undefined
+    run: () => Promise<SupabaseSelectResponse<QueryData<typeof query>>>
     config: {
       sorting?: {
         param: string
@@ -66,7 +81,10 @@ export default async function useSupabaseSelect<
         pageSize: number
       }
     }
-    edit: (func: (q: typeof query) => typeof query) => QueryBuilder
+    edit: (
+      func: (q: typeof query) => typeof query,
+      applyToAggregate?: boolean
+    ) => QueryBuilder
     applyFilters: (param?: string) => QueryBuilder
     applySorting: (param?: string) => QueryBuilder
     paginated: (props?: { param?: string; pageSize?: number }) => QueryBuilder
@@ -81,20 +99,42 @@ export default async function useSupabaseSelect<
 
   const createBuilder: (
     q: typeof query,
+    aq: typeof query | undefined,
     config: QueryBuilder["config"]
-  ) => QueryBuilder = (q, config) => ({
+  ) => QueryBuilder = (q, aq, config) => ({
     query: q,
+    aggregateQuery: aq,
+    run: async () => {
+      const { data, error, count } = await q
+      const { data: aggregate, error: aggError } = aq ? await aq : {}
+
+      return {
+        data,
+        aggregate,
+        count,
+        errors:
+          error || aggError ? [error, aggError].filter((e) => e != null) : null,
+      }
+    },
     config,
-    edit: (func) => createBuilder(func(q), config),
+    edit: (func, applyToAggregate = true) =>
+      createBuilder(func(q), applyToAggregate ? aq && func(aq) : aq, config),
     applyFilters: (param = "filter") => {
       getSearchParams(params[param])?.forEach((filter) => {
         const [column, operator, value] = filter.split(":", 3)
 
         if (operator in Filters) {
           q = Filters[operator as keyof typeof Filters](q, column as any, value)
+          if (aq) {
+            aq = Filters[operator as keyof typeof Filters](
+              aq,
+              column as any,
+              value
+            )
+          }
         }
       })
-      return createBuilder(q, config)
+      return createBuilder(q, aq, config)
     },
     applySorting: (param = "sort") => {
       const sorting = getSearchParams(params[param]) ?? undefined
@@ -103,7 +143,7 @@ export default async function useSupabaseSelect<
 
         q = q.order(column, { ascending: dir == "asc" })
       })
-      return createBuilder(q, {
+      return createBuilder(q, aq, {
         ...config,
         sorting: {
           param,
@@ -124,6 +164,7 @@ export default async function useSupabaseSelect<
 
       return createBuilder(
         q.range((page - 1) * pageSize, page * pageSize - 1),
+        aq,
         {
           ...config,
           pagination: { param, page, pageSize },
@@ -140,10 +181,11 @@ export default async function useSupabaseSelect<
         ) => {
           const paramValue = getSearchParams(params[param])
           if (paramValue == null) {
-            return createBuilder(q, config)
+            return createBuilder(q, aq, config)
           }
           return createBuilder(
             value(q, column, transform(paramValue[0])),
+            aq && value(aq, column, transform(paramValue[0])),
             config
           )
         },
@@ -158,5 +200,5 @@ export default async function useSupabaseSelect<
     >),
   })
 
-  return createBuilder(query, {})
+  return createBuilder(query, aggregateQuery as any, {})
 }

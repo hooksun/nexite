@@ -1,7 +1,6 @@
 "use client"
 
 import { ReactNode, useEffect, useId, useState } from "react"
-import { FormInput, formInput } from "./form-field"
 import {
   Controller,
   UseControllerProps,
@@ -11,62 +10,69 @@ import {
 import { useDataView } from "@/hooks/use-data-view"
 import { Field, FieldError, FieldLabel } from "./ui/field"
 import { useSearchParams } from "next/navigation"
+import { formInput, FormInput } from "./form-inputs"
 
-export default function FilterField({
-  name,
-  label,
-  submitOnChange = false,
-  className,
-  render = formInput(),
-  ...props
-}: {
-  label?: ReactNode
-  submitOnChange?: boolean
-  className?: string
-  render?: FormInput
-} & UseControllerProps) {
+export default function FilterField(
+  {
+    name,
+    label,
+    submitOnChange = false,
+    className,
+    render = formInput(),
+    orientation = "horizontal",
+    ...props
+  }: {
+    label?: ReactNode
+    submitOnChange?: boolean
+    className?: string
+    orientation?: "vertical" | "horizontal" | "responsive" | null
+    render?: FormInput
+  } & Omit<UseControllerProps, "control"> //Force use of FormProvider
+) {
   const id = useId()
 
   const searchParams = useSearchParams()
-  const defaultValue = searchParams.get(name)
+  const defaultValue = searchParams.get(name) ?? undefined
 
-  const { setValue } = useFormContext()
+  const { setValue, resetField } = useFormContext()
   const { setState, pagination } = useDataView()
+
+  const [mountState, setMountState] = useState(0)
+  const mounted = mountState >= 2
+
+  useEffect(() => {
+    if (!mounted) {
+      setMountState(mountState + 1)
+    }
+  }, [mountState])
 
   const value = useWatch({ name, disabled: !submitOnChange })
 
-  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    resetField(name, { defaultValue, keepDirty: false })
+  }, [defaultValue])
 
   useEffect(() => {
-    if (!mounted) {
+    if (!mounted || !submitOnChange) {
       return
     }
 
-    if (submitOnChange) {
-      setValue(name, value)
-      setState({
-        [name]: value,
-        ...(pagination ? { [pagination.param]: "1" } : {}),
-      })
-    }
+    setValue(name, value)
+    setState({
+      [name]: value,
+      ...(pagination ? { [pagination.param]: "1" } : {}),
+    })
   }, [value])
-
-  useEffect(() => {
-    if (!mounted) {
-      setMounted(true)
-    }
-  }, [mounted])
 
   return (
     <Controller
       name={name}
-      defaultValue={defaultValue}
       {...props}
       render={({ field, fieldState, formState }) => (
         <Field
           data-invalid={fieldState.invalid}
           className={className}
-          orientation="horizontal"
+          orientation={orientation}
         >
           {label && (
             <FieldLabel htmlFor={id} className="capitalize">
