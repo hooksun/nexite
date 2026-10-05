@@ -123,11 +123,11 @@ export default function PageContent({
       <main className="mx-auto w-full max-w-160 p-6 pt-4">
         <FieldSet>
           <form className="contents" onSubmit={handleSubmit(onSubmit)}>
-            <FieldLegend>Form Page</FieldLegend>
+            <FieldLegend>Interactive Form Demo</FieldLegend>
             <FieldDescription>
-              Showcases a form made with react-hook-form with multiple field
-              types and validation. Responses are saved in Supabase and can be
-              edited.
+              A form built with React Hook Form, demonstrating multiple field
+              types and validation patterns. Responses are saved to Supabase and
+              can be edited afterward.
             </FieldDescription>
             <FieldGroup>
               <div className="grid grid-flow-col gap-4">
@@ -152,7 +152,7 @@ export default function PageContent({
               <FormField
                 control={control}
                 name="sensitive"
-                description="Sensitive data that can be hidden or shown (don't input your real password)"
+                description="Sensitive data field with show/hide toggle. (Don't input your real password)"
                 rules={{
                   required: "Must be filled",
                   minLength: {
@@ -176,14 +176,14 @@ export default function PageContent({
               <FormField
                 control={control}
                 name="date"
-                description="Date input with configurable display and output formats"
+                description="Date picker with configurable display and output formats."
                 rules={{ required: "Must be filled" }}
                 render={dateInput({ displayFormat: "PPP" })}
               />
               <FormField
                 control={control}
                 name="search"
-                description="Search input with dynamic fetching & multiple values, using countries as example values"
+                description="Search input with dynamic fetching and multi-select, using countries as example data."
                 rules={{
                   required: "Must be filled",
                 }}
@@ -206,6 +206,7 @@ export default function PageContent({
                     control={control}
                     name="conditional"
                     className="pt-5"
+                    description="Appears dynamically based on the toggle above, demonstrating conditional field rendering."
                     render={textareaInput({ placeholder: "Conditional input" })}
                   />
                 </CollapsibleContent>
@@ -213,7 +214,7 @@ export default function PageContent({
               <FormField
                 control={control}
                 name="price"
-                description="Price formatted input using react-number-format"
+                description="Price input with automatic currency formatting (powered by react-number-format)."
                 rules={{
                   required: "Must be filled",
                 }}
@@ -223,8 +224,8 @@ export default function PageContent({
                 control={control}
                 orientation="horizontal"
                 name="consent"
-                label="I consent to this data being uploaded and viewable by the owner"
-                className="flex-row-reverse gap-2"
+                label="I consent to this data being uploaded and viewable by the owner."
+                className="flex-row-reverse gap-2 *:normal-case"
                 render={checkboxInput()}
               />
               <div className="flex justify-between">

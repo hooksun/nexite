@@ -14,29 +14,32 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 const stack = [
   {
     name: "Next.js",
-    desc: "Used Next.js (App Router) with Typescript & Tailwind. Utilized Next.js specific features such as Server Side Rendering, Server actions, etc",
+    desc: "Built with Next.js (App Router), TypeScript, and Tailwind CSS. Leveraged Next.js-specific features such as Server-Side Rendering and Server Actions to optimize performance.",
   },
   {
     name: "Supabase",
-    desc: "Used Supabase for database & authentication. Implemented RLS Policies to ensure data security. Utilized supabase SSR to call APIs from the server and make API keys not exposed to the browser",
+    desc: "Used Supabase for database and authentication, with RLS policies enforced to secure data access. Utilized Supabase SSR to call APIs server-side, keeping API keys hidden from the browser.",
   },
   {
     name: "Shadcn",
-    desc: "Used Shadcn (Base UI). Selected appropriate components to ensure accessibility for screen readers",
+    desc: "Implemented shadcn (Base UI) as the foundation for custom components. Selected and configured components with accessibility in mind, ensuring proper screen reader support and keyboard navigation.",
   },
   {
     name: "React-hook-form",
-    desc: "Used react-hook-form to create forms. Utilized features such as  Controller, useWatch, etc to maximize render efficiency",
+    desc: "Used React Hook Form to build customizable forms, leveraging features like Controller and useWatch to minimize unnecessary re-renders.",
   },
 ]
 
 export default function Page() {
   return (
     <main className="flex min-h-svh w-full flex-wrap gap-12 p-6">
-      <div className="flex max-w-md min-w-0 grow flex-col gap-4 text-sm leading-loose">
+      <div className="flex max-w-md min-w-0 grow flex-col gap-4 text-sm">
         <div>
           <h1 className="text-8xl font-bold">Nexite</h1>
-          <p>Practice project using Next.js & Supabase</p>
+          <p className="py-3">
+            Built to explore and demonstrate modern full-stack patterns with
+            Next.js and Supabase.
+          </p>
           <p>Tech stack used</p>
         </div>
 
