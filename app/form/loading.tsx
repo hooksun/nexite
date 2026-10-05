@@ -1,5 +1,5 @@
 import PageContent from "./content"
 
 export default function Loading() {
-  return <PageContent />
+  return <PageContent loading />
 }

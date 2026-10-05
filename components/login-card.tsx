@@ -10,7 +10,7 @@ import {
 } from "@/app/auth/actions"
 import FormField from "./form-field"
 import { Button } from "./ui/button"
-import { forwardRef, useState } from "react"
+import { forwardRef, useEffect, useRef, useState } from "react"
 import { HatGlasses } from "lucide-react"
 import ButtonLoading from "./ui/button-loading"
 import { cn } from "cn"
@@ -22,11 +22,24 @@ const LoginCard = forwardRef<
 >(({ className, onLogin }, ref) => {
   const form = useForm()
 
+  const unmountResolve = useRef<() => unknown>(null)
+  useEffect(() => {
+    return () => {
+      if (unmountResolve.current) {
+        unmountResolve.current()
+        unmountResolve.current = null
+      }
+    }
+  }, [])
+
   const [error, setError] = useState("")
 
   const [isLogin, setIsLogin] = useState(true)
 
   const login = async (data: Record<string, string>) => {
+    if (unmountResolve.current) {
+      return
+    }
     setError("")
 
     const { error } = await loginWithEmail(
@@ -40,10 +53,14 @@ const LoginCard = forwardRef<
 
     if (!error) {
       onLogin && onLogin()
+      await new Promise<void>((res) => (unmountResolve.current = res))
     }
   }
 
   const signUp = async (data: Record<string, string>) => {
+    if (unmountResolve.current) {
+      return
+    }
     setError("")
 
     const { error } = await signUpWithEmail(
@@ -57,10 +74,14 @@ const LoginCard = forwardRef<
 
     if (!error) {
       onLogin && onLogin()
+      await new Promise<void>((res) => (unmountResolve.current = res))
     }
   }
 
   const loginAnon = async () => {
+    if (unmountResolve.current) {
+      return
+    }
     setError("")
 
     const { error } = await loginAnonymous()
@@ -69,6 +90,7 @@ const LoginCard = forwardRef<
 
     if (!error) {
       onLogin && onLogin()
+      await new Promise<void>((res) => (unmountResolve.current = res))
     }
   }
 

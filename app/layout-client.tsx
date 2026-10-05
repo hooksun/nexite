@@ -1,7 +1,7 @@
 "use client"
 
 import Navbar from "@/components/navbar"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/toast"
 import PathStateProvider from "@/hooks/use-path-state"
 import { ReactNode } from "react"
@@ -13,16 +13,12 @@ export default function RootLayoutClient({
 }) {
   return (
     <PathStateProvider>
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={false}>
         <Navbar />
-        <main className="relative h-full min-h-svh flex-1 overflow-auto">
+        <div className="@container-[scroll-state] relative h-dvh flex-1 overflow-auto">
           {children}
-          <SidebarTrigger
-            className="fixed bottom-2 left-2 md:hidden"
-            size="icon-lg"
-          />
-          <Toaster />
-        </main>
+        </div>
+        <Toaster />
       </SidebarProvider>
     </PathStateProvider>
   )

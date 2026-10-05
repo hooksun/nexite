@@ -32,15 +32,18 @@ import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { deleteTable } from "@/lib/supabase/crud-actions"
+import Header from "@/components/ui/header"
 
 export default function PageContent({
   user,
   defaultValues,
   hasResponse = false,
+  loading = false,
 }: {
   user?: User
   defaultValues?: Database["public"]["Tables"]["response"]["Row"]
   hasResponse?: boolean
+  loading?: boolean
 }) {
   const { control, handleSubmit, watch, formState, reset, setValues } = useForm(
     {
@@ -57,6 +60,7 @@ export default function PageContent({
         conditional: "" as string | null,
         consent: false,
       },
+      disabled: loading,
     }
   )
 
@@ -114,154 +118,162 @@ export default function PageContent({
   }
 
   return (
-    <div className="mx-auto w-full max-w-160 p-6">
-      <FieldSet>
-        <form className="contents" onSubmit={handleSubmit(onSubmit)}>
-          <FieldLegend>Form Page</FieldLegend>
-          <FieldDescription>
-            Showcases a form made with react-hook-form with multiple field types
-            and validation. Responses are saved in Supabase and can be edited.
-          </FieldDescription>
-          <FieldGroup>
-            <div className="grid grid-flow-col gap-4">
-              <FormField
-                control={control}
-                label="first name"
-                name="first_name"
-                rules={{ required: "Must be filled" }}
-              />
-              <FormField control={control} label="last name" name="last_name" />
-            </div>
-            <FormField
-              control={control}
-              name="email"
-              rules={{ required: "Must be filled" }}
-              render={formInput({ type: "email" })}
-            />
-            <FormField
-              control={control}
-              name="sensitive"
-              description="Sensitive data that can be hidden or shown (don't input your real password)"
-              rules={{
-                required: "Must be filled",
-                minLength: {
-                  value: 8,
-                  message: "Must be at least 8 characters",
-                },
-              }}
-              render={passwordInput({ placeholder: "Min. 8 characters" })}
-            />
-            <FormField
-              control={control}
-              name="select"
-              rules={{
-                required: "Must be filled",
-              }}
-              render={selectString({
-                options: ["Male", "Female"],
-                optionsLabel: "Choose gender",
-              })}
-            />
-            <FormField
-              control={control}
-              name="date"
-              description="Date input with configurable display and output formats"
-              rules={{ required: "Must be filled" }}
-              render={dateInput({ displayFormat: "PPP" })}
-            />
-            <FormField
-              control={control}
-              name="search"
-              description="Search input with dynamic fetching & multiple values, using countries as example values"
-              rules={{
-                required: "Must be filled",
-              }}
-              render={searchInputSupabase({
-                table: "search",
-                column: "value",
-                limit: 10,
-                allowEmptyQuery: true,
-              })}
-            />
-            <Collapsible open={watch("condition")}>
-              <FormField
-                control={control}
-                name="condition"
-                orientation="horizontal"
-                render={switchInput()}
-              />
-              <CollapsibleContent animated>
+    <>
+      <Header title="Form Page" />
+      <main className="mx-auto w-full max-w-160 p-6 pt-4">
+        <FieldSet>
+          <form className="contents" onSubmit={handleSubmit(onSubmit)}>
+            <FieldLegend>Form Page</FieldLegend>
+            <FieldDescription>
+              Showcases a form made with react-hook-form with multiple field
+              types and validation. Responses are saved in Supabase and can be
+              edited.
+            </FieldDescription>
+            <FieldGroup>
+              <div className="grid grid-flow-col gap-4">
                 <FormField
                   control={control}
-                  name="conditional"
-                  className="pt-5"
-                  render={textareaInput({ placeholder: "Conditional input" })}
+                  label="first name"
+                  name="first_name"
+                  rules={{ required: "Must be filled" }}
                 />
-              </CollapsibleContent>
-            </Collapsible>
-            <FormField
-              control={control}
-              name="price"
-              description="Price formatted input using react-number-format"
-              rules={{
-                required: "Must be filled",
-              }}
-              render={priceInput()}
-            />
-            <FormField
-              control={control}
-              orientation="horizontal"
-              name="consent"
-              label="I consent to this data being uploaded and viewable by the owner"
-              className="flex-row-reverse gap-2"
-              render={checkboxInput()}
-            />
-            <div className="flex justify-between">
-              <ButtonLoading
-                size="lg"
-                disabled={!watch("consent")}
-                type="submit"
-                loading={formState.isSubmitting}
-              >
-                Submit
-              </ButtonLoading>
-              {hasResponse && (
-                <Button
-                  className="text-destructive"
-                  variant="link"
-                  onClick={() =>
-                    confirm({
-                      destructive: true,
-                      title: "Clear response?",
-                      description: "response will be deleted",
-                      onConfirm: async () => {
-                        await deleteTable("response", [defaultValues?.id!])
-                        reset()
-                      },
-                    })
-                  }
+                <FormField
+                  control={control}
+                  label="last name"
+                  name="last_name"
+                />
+              </div>
+              <FormField
+                control={control}
+                name="email"
+                rules={{ required: "Must be filled" }}
+                render={formInput({ type: "email" })}
+              />
+              <FormField
+                control={control}
+                name="sensitive"
+                description="Sensitive data that can be hidden or shown (don't input your real password)"
+                rules={{
+                  required: "Must be filled",
+                  minLength: {
+                    value: 8,
+                    message: "Must be at least 8 characters",
+                  },
+                }}
+                render={passwordInput({ placeholder: "Min. 8 characters" })}
+              />
+              <FormField
+                control={control}
+                name="select"
+                rules={{
+                  required: "Must be filled",
+                }}
+                render={selectString({
+                  options: ["Male", "Female"],
+                  optionsLabel: "Choose gender",
+                })}
+              />
+              <FormField
+                control={control}
+                name="date"
+                description="Date input with configurable display and output formats"
+                rules={{ required: "Must be filled" }}
+                render={dateInput({ displayFormat: "PPP" })}
+              />
+              <FormField
+                control={control}
+                name="search"
+                description="Search input with dynamic fetching & multiple values, using countries as example values"
+                rules={{
+                  required: "Must be filled",
+                }}
+                render={searchInputSupabase({
+                  table: "search",
+                  column: "value",
+                  limit: 10,
+                  allowEmptyQuery: true,
+                })}
+              />
+              <Collapsible open={watch("condition")}>
+                <FormField
+                  control={control}
+                  name="condition"
+                  orientation="horizontal"
+                  render={switchInput()}
+                />
+                <CollapsibleContent animated>
+                  <FormField
+                    control={control}
+                    name="conditional"
+                    className="pt-5"
+                    render={textareaInput({ placeholder: "Conditional input" })}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+              <FormField
+                control={control}
+                name="price"
+                description="Price formatted input using react-number-format"
+                rules={{
+                  required: "Must be filled",
+                }}
+                render={priceInput()}
+              />
+              <FormField
+                control={control}
+                orientation="horizontal"
+                name="consent"
+                label="I consent to this data being uploaded and viewable by the owner"
+                className="flex-row-reverse gap-2"
+                render={checkboxInput()}
+              />
+              <div className="flex justify-between">
+                <ButtonLoading
+                  size="lg"
+                  disabled={!watch("consent")}
+                  type="submit"
+                  loading={formState.isSubmitting}
                 >
-                  <Trash2 />
-                  Clear Response
-                </Button>
-              )}
-            </div>
-          </FieldGroup>
-        </form>
-      </FieldSet>
+                  Submit
+                </ButtonLoading>
+                {hasResponse && (
+                  <Button
+                    className="text-destructive"
+                    variant="link"
+                    onClick={() =>
+                      confirm({
+                        destructive: true,
+                        title: "Clear response?",
+                        description: "response will be deleted",
+                        onConfirm: async () => {
+                          await deleteTable("response", [defaultValues?.id!])
+                          reset()
+                        },
+                      })
+                    }
+                  >
+                    <Trash2 />
+                    Clear Response
+                  </Button>
+                )}
+              </div>
+            </FieldGroup>
+          </form>
+        </FieldSet>
 
-      <Dialog open={openLogin} onOpenChange={setOpenLogin}>
-        <DialogContent
-          render={
-            <LoginCard
-              onLogin={() => {
-                setOpenLogin(false)
-                submitAfterLogin.current = true
-              }}
-            />
-          }
-        />
-      </Dialog>
-    </div>
+        <Dialog open={openLogin} onOpenChange={setOpenLogin}>
+          <DialogContent
+            render={
+              <LoginCard
+                onLogin={() => {
+                  setOpenLogin(false)
+                  submitAfterLogin.current = true
+                }}
+              />
+            }
+          />
+        </Dialog>
+      </main>
+    </>
   )
 }

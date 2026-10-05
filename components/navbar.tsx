@@ -72,7 +72,7 @@ export default function Navbar() {
     }
   }, [pathName])
 
-  const [openTableSub, setOpenTableSub] = useState(true)
+  const [openTableSub, setOpenTableSub] = useState(false)
 
   const path = usePath()
 

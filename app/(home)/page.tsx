@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 
 const stack = [
   {
@@ -27,15 +28,11 @@ const stack = [
     name: "React-hook-form",
     desc: "Used react-hook-form to create forms. Utilized features such as  Controller, useWatch, etc to maximize render efficiency",
   },
-  // {
-  //   name: "Zod",
-  //   desc: "Used zod for form validation & type safety",
-  // },
 ]
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh w-full flex-wrap gap-12 p-6">
+    <main className="flex min-h-svh w-full flex-wrap gap-12 p-6">
       <div className="flex max-w-md min-w-0 grow flex-col gap-4 text-sm leading-loose">
         <div>
           <h1 className="text-8xl font-bold">Nexite</h1>
@@ -57,6 +54,9 @@ export default function Page() {
             </Card>
           ))}
         </Accordion>
+        <SidebarTrigger size="default" variant="default" className="self-start">
+          View Pages
+        </SidebarTrigger>
       </div>
 
       <div className="mx-auto flex justify-center self-center">
@@ -86,6 +86,6 @@ export default function Page() {
           )}
         />
       </div>
-    </div>
+    </main>
   )
 }

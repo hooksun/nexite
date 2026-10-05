@@ -25,6 +25,7 @@ export type InputSearchProps = {
   renderOption?: (option: string) => ReactNode
   optionState?: OptionState
   autoHighlight?: boolean
+  disabled?: boolean
 } & Omit<Parameters<typeof ComboboxChipsInput>[0], "value" | "onChange">
 
 export default function InputSearch({
@@ -35,6 +36,7 @@ export default function InputSearch({
   renderOption = (o) => o,
   optionState = "success",
   autoHighlight = true,
+  disabled,
   ...props
 }: InputSearchProps) {
   const anchor = useComboboxAnchor()
@@ -52,6 +54,7 @@ export default function InputSearch({
         setQuery(value)
         onChangeQuery && onChangeQuery(value)
       }}
+      disabled={disabled}
     >
       <ComboboxChips ref={anchor}>
         <ComboboxValue>

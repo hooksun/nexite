@@ -20,6 +20,16 @@ import ButtonLoading from "@/components/ui/button-loading"
 import { insertDummyData } from "./actions"
 import FilterField from "@/components/filter-field"
 import { formInput } from "@/components/form-inputs"
+import Header from "@/components/ui/header"
+import {
+  Empty,
+  EmptyContent,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { toast } from "@/components/ui/toast"
+import { useDataView } from "@/hooks/use-data-view"
 
 export default function TablePage({
   statusses = [],
@@ -36,110 +46,135 @@ export default function TablePage({
 
   const [updatingRow, setUpdatingRow] = useState<any>()
 
+  const { setState } = useDataView()
+
+  const handleInsertDummyData = async () => {
+    const { error } = await insertDummyData()
+
+    if (error) {
+      toast.add({
+        type: "error",
+        title: "Failed to insert",
+      })
+      return
+    }
+
+    setState({}, false) // trigger loading state
+  }
+
   return (
-    <div className="flex max-h-dvh flex-col gap-6 p-6">
-      <DataTable
-        columns={[
-          selectColumn,
-          dataColumn("date", {
-            filter: (
-              <FilterDateRange startParam="start-date" endParam="end-date" />
-            ),
-          }),
-          dataColumn("name", {
-            filter: (
-              <FilterForm>
-                <FilterField
-                  name="name"
-                  render={formInput({ left: <Search />, clear: true })}
-                />
-              </FilterForm>
-            ),
-          }),
-          dataColumn("status", {
-            sortable: false,
-            filter: <FilterChecklist param="status" list={statusses} />,
-          }),
-          dataColumn("value", {
-            shrink: true,
-            cellClassName: "text-right",
-            filter: (
-              <FilterRange startParam="start-value" endParam="end-value" />
-            ),
-            renderFooter: ({ aggregate }) => (
-              <div className="text-right">{aggregate?.at(0)?.value_sum}</div>
-            ),
-          }),
-          actionsColumn((row) => [
-            {
-              children: "Update",
-              onClick: () => {
-                setUpdatingRow(row)
-                setOpenDrawer(true)
+    <div className="flex h-full flex-col">
+      <Header title="Sandbox" />
+      <div className="flex flex-1 flex-col gap-6 overflow-auto p-6 pt-2">
+        <DataTable
+          columns={[
+            selectColumn,
+            dataColumn("date", {
+              filter: (
+                <FilterDateRange startParam="start-date" endParam="end-date" />
+              ),
+            }),
+            dataColumn("name", {
+              filter: (
+                <FilterForm>
+                  <FilterField
+                    name="name"
+                    render={formInput({ left: <Search />, clear: true })}
+                  />
+                </FilterForm>
+              ),
+            }),
+            dataColumn("status", {
+              sortable: false,
+              filter: <FilterChecklist param="status" list={statusses} />,
+            }),
+            dataColumn("value", {
+              shrink: true,
+              cellClassName: "text-right",
+              filter: (
+                <FilterRange startParam="start-value" endParam="end-value" />
+              ),
+              renderFooter: ({ aggregate }) => (
+                <div className="text-right">{aggregate?.at(0)?.value_sum}</div>
+              ),
+            }),
+            actionsColumn((row) => [
+              {
+                children: "Update",
+                onClick: () => {
+                  setUpdatingRow(row)
+                  setOpenDrawer(true)
+                },
               },
-            },
-            {
-              children: "Delete",
-              variant: "destructive",
-              onClick: () =>
+              {
+                children: "Delete",
+                variant: "destructive",
+                onClick: () =>
+                  confirm({
+                    title: `Delete ${row.name}?`,
+                    description: "This action can't be undone",
+                    onConfirm: () => deleteTable("sandbox", [row.id as number]),
+                    destructive: true,
+                  }),
+              },
+            ]),
+          ]}
+          emptyState={
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia>
+                  <CircleOff />
+                </EmptyMedia>
+                <EmptyTitle>Data not found</EmptyTitle>
+              </EmptyHeader>
+              <EmptyContent className="flex-row justify-center gap-2">
+                <ButtonRefresh size="default" variant="secondary">
+                  Reload
+                </ButtonRefresh>
+                <ButtonLoading onClick={handleInsertDummyData}>
+                  Add Dummy
+                </ButtonLoading>
+              </EmptyContent>
+            </Empty>
+          }
+          footerLabel="Total"
+          getRowId={(row) => row.id as string | number}
+        />
+
+        <div className="flex justify-end gap-2">
+          {selected.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={() =>
                 confirm({
-                  title: `Delete ${row.name}?`,
-                  description: "This action can't be undone",
-                  onConfirm: () => deleteTable("sandbox", [row.id as number]),
+                  onConfirm: () => deleteTable("sandbox", [...selected]),
                   destructive: true,
-                }),
-            },
-          ]),
-        ]}
-        emptyState={
-          <div className="flex flex-col items-center gap-4 p-8 text-center text-muted-foreground">
-            <CircleOff />
-            Data not found
-            <div className="flex gap-4">
-              <ButtonRefresh size="default" variant="secondary">
-                Reload
-              </ButtonRefresh>
-              <ButtonLoading onClick={insertDummyData}>Add Dummy</ButtonLoading>
-            </div>
-          </div>
-        }
-        footerLabel="Total"
-        getRowId={(row) => row.id as string | number}
-      />
-
-      <div className="flex justify-end gap-2">
-        {selected.size > 0 && (
+                  title: `Delete ${selected.size} data?`,
+                  description: "This action can't be undone",
+                })
+              }
+            >
+              <Trash /> Delete {selected.size} data
+            </Button>
+          )}
           <Button
-            variant="destructive"
-            onClick={() =>
-              confirm({
-                onConfirm: () => deleteTable("sandbox", [...selected]),
-                destructive: true,
-                title: `Delete ${selected.size} data?`,
-                description: "This action can't be undone",
-              })
-            }
+            className="justify-self-end"
+            onClick={() => {
+              setUpdatingRow(undefined)
+              setOpenDrawer(true)
+            }}
           >
-            <Trash /> Delete {selected.size} data
+            <Plus /> Add
           </Button>
-        )}
-        <Button
-          className="justify-self-end"
-          onClick={() => {
-            setUpdatingRow(undefined)
-            setOpenDrawer(true)
-          }}
-        >
-          <Plus /> Add
-        </Button>
-      </div>
+        </div>
 
-      <InputSheet
-        open={openDrawer}
-        onOpenChange={setOpenDrawer}
-        defaultValues={updatingRow}
-        statusOptions={statusses}
-      />
+        <InputSheet
+          open={openDrawer}
+          onOpenChange={setOpenDrawer}
+          defaultValues={updatingRow}
+          statusOptions={statusses}
+        />
+      </div>
     </div>
   )
 }
