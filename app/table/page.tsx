@@ -2,6 +2,11 @@ import useSupabaseSelect from "@/hooks/use-supabase-select"
 import TablePage from "./content"
 import { SearchParams } from "@/lib/utils"
 import { DataViewProvider } from "@/hooks/use-data-view"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Table",
+}
 
 export default async function Page({
   searchParams,

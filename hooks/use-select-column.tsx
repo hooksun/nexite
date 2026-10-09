@@ -52,12 +52,14 @@ export default function useSelectColumn<T, D extends string | number>({
     column: {
       header: (
         <Checkbox
+          aria-label="Select all"
           checked={selected.size == data?.length && selected.size != 0}
           onCheckedChange={setAllSelected}
         />
       ),
       render: (row) => (
         <Checkbox
+          aria-label="Select"
           checked={selected.has(getRowId(row))}
           onCheckedChange={(checked) => setRowSelected(getRowId(row), checked)}
         />

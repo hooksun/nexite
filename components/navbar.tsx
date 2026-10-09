@@ -45,18 +45,21 @@ function NavbarMenu({
 }) {
   return (
     <Tooltip>
-      <TooltipTrigger disabled={!showTooltip}>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            render={
-              <Link href={path}>
-                {icon}
-                {label}
-              </Link>
-            }
-          />
-        </SidebarMenuItem>
-      </TooltipTrigger>
+      <TooltipTrigger
+        disabled={!showTooltip}
+        render={
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              render={
+                <Link href={path}>
+                  {icon}
+                  {label}
+                </Link>
+              }
+            />
+          </SidebarMenuItem>
+        }
+      />
       <TooltipContent side="right">{label}</TooltipContent>
     </Tooltip>
   )
@@ -83,6 +86,7 @@ export default function Navbar() {
       <SidebarHeader className="transition-[margin,opacity] duration-200 ease-linear group-data-[collapsible=icon]:-mt-12 group-data-[collapsible=icon]:opacity-0">
         <SidebarMenuButton
           className="w-fit"
+          aria-label="Close"
           onClick={(e) => {
             e.stopPropagation()
             setOpenMobile(false)
@@ -94,8 +98,8 @@ export default function Navbar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup onClick={(e) => e.stopPropagation()}>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarMenu>
-            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <NavbarMenu
               icon={<Home />}
               label="Home"
@@ -179,6 +183,7 @@ export default function Navbar() {
                 render={
                   <SidebarMenuButton
                     className="w-fit text-muted-foreground"
+                    aria-label="View Source Code"
                     render={
                       <Link
                         target="_blank"

@@ -64,8 +64,8 @@ export default function TablePage({
 
   return (
     <div className="flex h-full flex-col">
-      <Header title="Sandbox" />
-      <div className="flex flex-1 flex-col gap-6 overflow-auto p-6 pt-2">
+      <Header title="Sandbox Table" />
+      <main className="flex flex-1 flex-col gap-6 overflow-auto p-6 pt-2">
         <DataTable
           columns={[
             selectColumn,
@@ -79,7 +79,7 @@ export default function TablePage({
                 <FilterForm>
                   <FilterField
                     name="name"
-                    render={formInput({ left: <Search />, clear: true })}
+                    input={formInput({ left: <Search />, clear: true })}
                   />
                 </FilterForm>
               ),
@@ -174,7 +174,7 @@ export default function TablePage({
           defaultValues={updatingRow}
           statusOptions={statusses}
         />
-      </div>
+      </main>
     </div>
   )
 }

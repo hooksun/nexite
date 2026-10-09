@@ -42,7 +42,11 @@ export default function Paginator({
           if (i == 0 && curr > 1) {
             return (
               <PaginationItem key={1}>
-                <PaginationLink onClick={() => setPage(1)} isActive={1 == page}>
+                <PaginationLink
+                  aria-label="First page"
+                  onClick={() => setPage(1)}
+                  isActive={1 == page}
+                >
                   <ChevronsLeft />
                 </PaginationLink>
               </PaginationItem>
@@ -53,6 +57,7 @@ export default function Paginator({
             return (
               <PaginationItem key={pageCount}>
                 <PaginationLink
+                  aria-label="Last page"
                   onClick={() => setPage(pageCount)}
                   isActive={pageCount == page}
                 >

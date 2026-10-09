@@ -14,7 +14,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 const stack = [
   {
     name: "Next.js",
-    desc: "Built with Next.js (App Router), TypeScript, and Tailwind CSS. Leveraged Next.js-specific features such as Server-Side Rendering and Server Actions to optimize performance.",
+    desc: "Built with Next.js (App Router), TypeScript, and Tailwind CSS. Leveraged Next.js-specific features such as Server-Side Rendering and Server Actions to optimize performance, consistently scoring 90+ on Lighthouse Performance.",
   },
   {
     name: "Supabase",
@@ -22,11 +22,11 @@ const stack = [
   },
   {
     name: "Shadcn",
-    desc: "Implemented shadcn (Base UI) as the foundation for custom components. Selected and configured components with accessibility in mind, ensuring proper screen reader support and keyboard navigation.",
+    desc: "Used shadcn (Base UI) as the foundation for custom components, configured for screen reader and keyboard support and scoring 100 on Lighthouse's Accessibility audit across every page.",
   },
   {
     name: "React-hook-form",
-    desc: "Used React Hook Form to build customizable forms, leveraging features like Controller and useWatch to minimize unnecessary re-renders.",
+    desc: "Implemented React Hook Form to build customizable forms, leveraging features like Controller and useWatch to minimize unnecessary re-renders.",
   },
 ]
 
@@ -35,7 +35,7 @@ export default function Page() {
     <main className="flex min-h-svh w-full flex-wrap gap-12 p-6">
       <div className="flex max-w-md min-w-0 grow flex-col gap-4 text-sm">
         <div>
-          <h1 className="text-8xl font-bold">Nexite</h1>
+          <h2 className="text-8xl font-bold">Nexite</h2>
           <p className="py-3">
             Built to explore and demonstrate modern full-stack patterns with
             Next.js and Supabase.
@@ -82,7 +82,7 @@ export default function Page() {
                 {user.is_anonymous &&
                   "Anonymous accounts can only be accessible in the current session"}
                 <ButtonLoading onClick={signOut} variant="secondary">
-                  Sign Out
+                  Sign out
                 </ButtonLoading>
               </CardContent>
             </Card>

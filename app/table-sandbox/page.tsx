@@ -3,6 +3,11 @@ import TablePage from "./content"
 import { SearchParams } from "@/lib/utils"
 import { DataViewProvider } from "@/hooks/use-data-view"
 import { createClient } from "@/lib/supabase/server"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Sandbox Table",
+}
 
 export default async function Page({
   searchParams,

@@ -18,7 +18,10 @@ export default function InputPassword(
     <InputGroup>
       <InputGroupInput type={hide ? "password" : "text"} {...props} />
       <InputGroupAddon align="inline-end">
-        <InputGroupButton onClick={() => setHide((h) => !h)}>
+        <InputGroupButton
+          onClick={() => setHide((h) => !h)}
+          aria-label="Toggle hidden"
+        >
           {hide ? <EyeClosed /> : <Eye />}
         </InputGroupButton>
       </InputGroupAddon>

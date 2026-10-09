@@ -33,7 +33,11 @@ function FilterButton({
   onClick?: () => unknown
 }) {
   return (
-    <Button variant={active ? "default" : "secondary"} size="icon-xs">
+    <Button
+      variant={active ? "default" : "secondary"}
+      size="icon-xs"
+      aria-label="Filter"
+    >
       <Funnel />
     </Button>
   )

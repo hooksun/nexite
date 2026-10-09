@@ -31,6 +31,7 @@ const ThemeSwitcher = () => {
             <TooltipTrigger
               render={
                 <SidebarMenuButton
+                  aria-label="Theme Switcher"
                   className={cn("w-min", !mounted && "invisible")}
                 >
                   {!mounted || resolvedTheme === "light" ? (

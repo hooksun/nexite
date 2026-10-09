@@ -9,6 +9,7 @@ export default function ButtonRefresh(props: Parameters<typeof Button>[0]) {
 
   return (
     <Button
+      aria-label="Refresh"
       variant="secondary"
       size="icon"
       {...props}

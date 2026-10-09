@@ -68,7 +68,10 @@ export function formInput<
       {right && <InputGroupAddon align="inline-end">{right}</InputGroupAddon>}
       {clear && field.value && (
         <InputGroupAddon align="inline-end">
-          <InputGroupButton onClick={() => field.onChange("")}>
+          <InputGroupButton
+            aria-label="Clear"
+            onClick={() => field.onChange("")}
+          >
             <X />
           </InputGroupButton>
         </InputGroupAddon>

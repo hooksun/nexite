@@ -175,6 +175,7 @@ export default function DataTable<T extends Record<string, unknown>>({
                 {column.filter}
                 {column.sortable && (
                   <Button
+                    aria-label="Sort"
                     size="icon-xs"
                     variant={
                       sortColumn == column.sortKey ? "default" : "secondary"

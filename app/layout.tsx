@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import RootLayoutClient from "./layout-client"
 import { AlertDialogProvider } from "@/hooks/use-alert-dialog"
+import { Metadata } from "next"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
 
@@ -13,6 +14,15 @@ const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | Nexite",
+    default: "Nexite",
+  },
+  description:
+    "Built to explore and demonstrate modern full-stack patterns with Next.js and Supabase.",
+}
 
 export default function RootLayout({
   children,

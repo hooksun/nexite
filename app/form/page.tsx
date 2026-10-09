@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/server"
 import PageContent from "./content"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Form",
+}
 
 export default async function Page() {
   const supabase = await createClient()

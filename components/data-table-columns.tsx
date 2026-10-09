@@ -71,7 +71,12 @@ export function actionsColumn<T extends Record<string, unknown>>(
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button variant="ghost" size="icon-sm" disabled={loading}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              disabled={loading}
+              aria-label="Actions"
+            >
               <Ellipsis />
             </Button>
           }
