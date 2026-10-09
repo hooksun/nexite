@@ -10,35 +10,38 @@ export type SupabaseSelectResponse<D> = {
   error: PostgrestError | null
 }
 
+type Row<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Row"]
+
 const getSearchParams = (key: string | string[] | undefined) =>
   Array.isArray(key) ? key : key ? [key] : null
 
-const defaultSelect = "*" as const
-
 export default async function useSupabaseSelect<
   const T extends keyof Database["public"]["Tables"],
-  const S extends string = typeof defaultSelect,
+  D = Row<T>,
 >(
   table: T,
   {
     searchParams,
-    select = defaultSelect,
-    options = { count: "exact", head: false },
+    select = "*",
     aggregateSelect,
+    options,
   }: {
     searchParams?: Promise<SearchParams>
-    select?: S | typeof defaultSelect
+    select?: "*" | (keyof Row<T> & string) | (string & {})
+    aggregateSelect?: (keyof Row<T> & string) | (string & {})
     options?: {
       head?: boolean | undefined
       count?: (string & {}) | "exact" | "planned" | "estimated" | undefined
     }
-    aggregateSelect?: string
   }
 ) {
   const params = (await searchParams) ?? {}
   const supabase = await createClient()
 
-  let query = supabase.from(table).select(select, options)
+  let query = supabase
+    .from(table)
+    .select(select as string, { count: "exact", head: false, ...options })
   let aggregateQuery = aggregateSelect
     ? supabase.from(table).select(aggregateSelect)
     : undefined
@@ -69,7 +72,7 @@ export default async function useSupabaseSelect<
   type QueryBuilder = {
     query: typeof query
     aggregateQuery: typeof query | undefined
-    run: () => Promise<SupabaseSelectResponse<QueryData<typeof query>>>
+    run: () => Promise<SupabaseSelectResponse<D[]>>
     config: {
       sorting?: {
         param: string
@@ -105,7 +108,10 @@ export default async function useSupabaseSelect<
     query: q,
     aggregateQuery: aq,
     run: async () => {
-      const { data, error, count } = await q
+      const { data, error, count } = await q.overrideTypes<
+        D[],
+        { merge: false }
+      >()
 
       if (error) {
         return {

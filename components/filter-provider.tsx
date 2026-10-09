@@ -14,7 +14,6 @@ import {
 const FilterContext = createContext({
   clear: () => {},
   clearEvent: -1,
-  activeList: undefined as RefObject<Record<string, boolean>> | undefined,
   hasActiveFilters: false,
   setActiveFilter: (id: string, active: boolean) => {},
 })
@@ -37,7 +36,6 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       value={{
         clear,
         clearEvent,
-        activeList,
         hasActiveFilters,
         setActiveFilter,
       }}

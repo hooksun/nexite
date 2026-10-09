@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useEffect, useMemo, useState } from "react"
+import { ReactNode, Suspense, useEffect, useMemo, useState } from "react"
 import { Skeleton } from "./ui/skeleton"
 import {
   Table,
@@ -110,145 +110,148 @@ export default function DataTable<T extends Record<string, unknown>>({
   }, [columns, response])
 
   return (
-    <Table>
-      <colgroup>
-        {columns.map((column, i) => (
-          <col
-            key={i}
-            {...column.columnProps}
-            className={cn(
-              column.shrink && "w-0 whitespace-nowrap",
-              column.columnProps?.className
-            )}
-          />
-        ))}
-      </colgroup>
-      <TableHeader className="sticky top-0 z-1 bg-background">
-        <TableRow>
+    <Suspense fallback={null}>
+      <Table>
+        <colgroup>
           {columns.map((column, i) => (
-            <TableHead key={i}>
-              <div
-                className={cn(
-                  "flex w-full items-center gap-2 capitalize",
-                  column.headerClassName
-                )}
-              >
-                {column.header}
-                {column.filter}
-                {column.sortable && (
-                  <Button
-                    aria-label="Sort"
-                    size="icon-xs"
-                    variant={
-                      sortColumn == column.sortKey ? "default" : "secondary"
-                    }
-                    onClick={() =>
-                      setSort(
-                        sortColumn == column.sortKey && sortDirection == "desc"
-                          ? null
-                          : (column.sortKey ?? null),
-                        sortColumn == column.sortKey && sortDirection == "asc"
-                          ? "desc"
-                          : "asc"
-                      )
-                    }
-                  >
-                    {sortColumn != column.sortKey ? (
-                      <ArrowDownUp />
-                    ) : sortDirection == "asc" ? (
-                      <ArrowUpWideNarrow className="-scale-x-100" />
-                    ) : (
-                      <ArrowDownNarrowWide />
-                    )}
-                  </Button>
-                )}
-              </div>
-            </TableHead>
+            <col
+              key={i}
+              {...column.columnProps}
+              className={cn(
+                column.shrink && "w-0 whitespace-nowrap",
+                column.columnProps?.className
+              )}
+            />
           ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {(data?.length ?? 0) == 0 && loading ? (
-          Array.from({ length: loadingRows }, (_, i) => (
-            <TableRow key={i}>
-              <TableCell colSpan={columnLength}>
-                <Skeleton className="h-5 rounded-full" />
-              </TableCell>
-            </TableRow>
-          ))
-        ) : error ? (
+        </colgroup>
+        <TableHeader className="sticky top-0 z-1 bg-background">
           <TableRow>
-            <TableCell colSpan={columnLength} className="p-0">
-              <div className="sticky left-0 w-[100cqw]">
-                <EmptyState
-                  media={<CircleX className="text-destructive" />}
-                  title="Error encountered"
-                  description={error.message}
-                  {...errorState}
-                />
-              </div>
-            </TableCell>
+            {columns.map((column, i) => (
+              <TableHead key={i}>
+                <div
+                  className={cn(
+                    "flex w-full items-center gap-2 capitalize",
+                    column.headerClassName
+                  )}
+                >
+                  {column.header}
+                  {column.filter}
+                  {column.sortable && (
+                    <Button
+                      aria-label="Sort"
+                      size="icon-xs"
+                      variant={
+                        sortColumn == column.sortKey ? "default" : "secondary"
+                      }
+                      onClick={() =>
+                        setSort(
+                          sortColumn == column.sortKey &&
+                            sortDirection == "desc"
+                            ? null
+                            : (column.sortKey ?? null),
+                          sortColumn == column.sortKey && sortDirection == "asc"
+                            ? "desc"
+                            : "asc"
+                        )
+                      }
+                    >
+                      {sortColumn != column.sortKey ? (
+                        <ArrowDownUp />
+                      ) : sortDirection == "asc" ? (
+                        <ArrowUpWideNarrow className="-scale-x-100" />
+                      ) : (
+                        <ArrowDownNarrowWide />
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </TableHead>
+            ))}
           </TableRow>
-        ) : !data?.length ? (
-          <TableRow>
-            <TableCell colSpan={columnLength} className="p-0">
-              <div className="sticky left-0 w-[100cqw]">
-                <EmptyState
-                  media={<CircleOff />}
-                  title="Data not found"
-                  content={hasActiveFilters && <ButtonClear />}
-                  {...emptyState}
-                />
-              </div>
-            </TableCell>
-          </TableRow>
-        ) : (
-          data?.map((row, i) => (
-            <TableRow key={getRowId ? getRowId(row) : getRowNumber(i)}>
-              {columns.map((column, j) => (
-                <TableCell key={j}>
-                  <div
-                    className={cn(
-                      "relative",
-                      loading && column.skeletonized !== false && "invisible",
-                      column.cellClassName
-                    )}
-                  >
-                    {loading && column.skeletonized !== false && (
-                      <Skeleton className="visible absolute h-full w-full rounded-full" />
-                    )}
-                    {column.render(row, {
-                      rowNumber: getRowNumber(i),
-                      loading,
-                    })}
-                  </div>
-                </TableCell>
-              ))}
-            </TableRow>
-          ))
-        )}
-      </TableBody>
-      {(!!footer || (pagination && pagination.pageCount > 1)) &&
-        (data?.length ?? 0) > 0 && (
-          <TableFooter className="sticky bottom-0 bg-background">
-            {footer}
-            {pagination && pagination.pageCount > 1 && (
-              <TableRow>
-                <TableCell colSpan={columnLength} className="p-0">
-                  <div className="flex w-full justify-end">
-                    <Paginator
-                      className="sticky right-0 mx-0 w-fit p-2"
-                      page={page}
-                      setPage={setPage}
-                      pageCount={pagination.pageCount}
-                    />
-                  </div>
+        </TableHeader>
+        <TableBody>
+          {(data?.length ?? 0) == 0 && loading ? (
+            Array.from({ length: loadingRows }, (_, i) => (
+              <TableRow key={i}>
+                <TableCell colSpan={columnLength}>
+                  <Skeleton className="h-5 rounded-full" />
                 </TableCell>
               </TableRow>
-            )}
-            <TableRow className="absolute top-0 right-0 bottom-0 left-0 -z-1 bg-muted/50" />
-          </TableFooter>
-        )}
-    </Table>
+            ))
+          ) : error ? (
+            <TableRow>
+              <TableCell colSpan={columnLength} className="p-0">
+                <div className="sticky left-0 w-[100cqw]">
+                  <EmptyState
+                    media={<CircleX className="text-destructive" />}
+                    title="Error encountered"
+                    description={error.message}
+                    {...errorState}
+                  />
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : !data?.length ? (
+            <TableRow>
+              <TableCell colSpan={columnLength} className="p-0">
+                <div className="sticky left-0 w-[100cqw]">
+                  <EmptyState
+                    media={<CircleOff />}
+                    title="Data not found"
+                    content={hasActiveFilters && <ButtonClear />}
+                    {...emptyState}
+                  />
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            data?.map((row, i) => (
+              <TableRow key={getRowId ? getRowId(row) : getRowNumber(i)}>
+                {columns.map((column, j) => (
+                  <TableCell key={j}>
+                    <div
+                      className={cn(
+                        "relative",
+                        loading && column.skeletonized !== false && "invisible",
+                        column.cellClassName
+                      )}
+                    >
+                      {loading && column.skeletonized !== false && (
+                        <Skeleton className="visible absolute h-full w-full rounded-full" />
+                      )}
+                      {column.render(row, {
+                        rowNumber: getRowNumber(i),
+                        loading,
+                      })}
+                    </div>
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+        {(!!footer || (pagination && pagination.pageCount > 1)) &&
+          (data?.length ?? 0) > 0 && (
+            <TableFooter className="sticky bottom-0 bg-background">
+              {footer}
+              {pagination && pagination.pageCount > 1 && (
+                <TableRow>
+                  <TableCell colSpan={columnLength} className="p-0">
+                    <div className="flex w-full justify-end">
+                      <Paginator
+                        className="sticky right-0 mx-0 w-fit p-2"
+                        page={page}
+                        setPage={setPage}
+                        pageCount={pagination.pageCount}
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+              <TableRow className="absolute top-0 right-0 bottom-0 left-0 -z-1 bg-muted/50" />
+            </TableFooter>
+          )}
+      </Table>
+    </Suspense>
   )
 }
