@@ -6,6 +6,7 @@ import FilterField from "@/components/filter-field"
 import { formInput } from "@/components/form-inputs"
 import { dataColumn, numberColumn } from "@/components/data-table-columns"
 import {
+  FilterChecklist,
   FilterDateRange,
   FilterForm,
   FilterRange,
@@ -30,7 +31,7 @@ export default function TablePage() {
                 <FilterForm>
                   <FilterField
                     name="name"
-                    render={formInput({ left: <Search />, clear: true })}
+                    input={formInput({ left: <Search />, clear: true })}
                   />
                 </FilterForm>
               ),
@@ -40,7 +41,7 @@ export default function TablePage() {
                 <FilterForm>
                   <FilterField
                     name="email"
-                    render={formInput({ left: <Search />, clear: true })}
+                    input={formInput({ left: <Search />, clear: true })}
                   />
                 </FilterForm>
               ),
@@ -50,7 +51,11 @@ export default function TablePage() {
                 Number(aggregate?.at(0)?.avg_age.toFixed(2)),
               filter: <FilterRange startParam="start-age" endParam="end-age" />,
             }),
-            dataColumn("gender"),
+            dataColumn("gender", {
+              filter: (
+                <FilterChecklist param="gender" list={["Male", "Female"]} />
+              ),
+            }),
             dataColumn("salary", {
               headerClassName: "justify-end",
               cellClassName: "text-right",
@@ -67,7 +72,7 @@ export default function TablePage() {
                 <FilterForm>
                   <FilterField
                     name="company"
-                    render={formInput({ left: <Search />, clear: true })}
+                    input={formInput({ left: <Search />, clear: true })}
                   />
                 </FilterForm>
               ),
@@ -77,7 +82,7 @@ export default function TablePage() {
                 <FilterForm>
                   <FilterField
                     name="occupation"
-                    render={formInput({ left: <Search />, clear: true })}
+                    input={formInput({ left: <Search />, clear: true })}
                   />
                 </FilterForm>
               ),
@@ -87,7 +92,7 @@ export default function TablePage() {
                 <FilterForm>
                   <FilterField
                     name="education"
-                    render={formInput({ left: <Search />, clear: true })}
+                    input={formInput({ left: <Search />, clear: true })}
                   />
                 </FilterForm>
               ),
@@ -97,7 +102,7 @@ export default function TablePage() {
                 <FilterForm>
                   <FilterField
                     name="skill"
-                    render={formInput({ left: <Search />, clear: true })}
+                    input={formInput({ left: <Search />, clear: true })}
                   />
                 </FilterForm>
               ),

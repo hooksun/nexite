@@ -147,7 +147,7 @@ export default function PageContent({
                 control={control}
                 name="email"
                 rules={{ required: "Must be filled" }}
-                render={formInput({ type: "email" })}
+                input={formInput({ type: "email" })}
               />
               <FormField
                 control={control}
@@ -160,7 +160,7 @@ export default function PageContent({
                     message: "Must be at least 8 characters",
                   },
                 }}
-                render={passwordInput({ placeholder: "Min. 8 characters" })}
+                input={passwordInput({ placeholder: "Min. 8 characters" })}
               />
               <FormField
                 control={control}
@@ -168,7 +168,7 @@ export default function PageContent({
                 rules={{
                   required: "Must be filled",
                 }}
-                render={selectString({
+                input={selectString({
                   options: ["Male", "Female"],
                   optionsLabel: "Choose gender",
                 })}
@@ -178,7 +178,7 @@ export default function PageContent({
                 name="date"
                 description="Date picker with configurable display and output formats."
                 rules={{ required: "Must be filled" }}
-                render={dateInput({ displayFormat: "PPP" })}
+                input={dateInput({ displayFormat: "PPP" })}
               />
               <FormField
                 control={control}
@@ -187,7 +187,7 @@ export default function PageContent({
                 rules={{
                   required: "Must be filled",
                 }}
-                render={searchInputSupabase({
+                input={searchInputSupabase({
                   table: "search",
                   column: "value",
                   limit: 10,
@@ -199,7 +199,7 @@ export default function PageContent({
                   control={control}
                   name="condition"
                   orientation="horizontal"
-                  render={switchInput()}
+                  input={switchInput()}
                 />
                 <CollapsibleContent animated>
                   <FormField
@@ -207,7 +207,7 @@ export default function PageContent({
                     name="conditional"
                     className="pt-5"
                     description="Appears dynamically based on the toggle above, demonstrating conditional field rendering."
-                    render={textareaInput({ placeholder: "Conditional input" })}
+                    input={textareaInput({ placeholder: "Conditional input" })}
                   />
                 </CollapsibleContent>
               </Collapsible>
@@ -218,7 +218,7 @@ export default function PageContent({
                 rules={{
                   required: "Must be filled",
                 }}
-                render={priceInput()}
+                input={priceInput()}
               />
               <FormField
                 control={control}
@@ -226,7 +226,7 @@ export default function PageContent({
                 name="consent"
                 label="I consent to this data being uploaded and viewable by the owner."
                 className="flex-row-reverse gap-2 *:normal-case"
-                render={checkboxInput()}
+                input={checkboxInput()}
               />
               <div className="flex justify-between">
                 <ButtonLoading

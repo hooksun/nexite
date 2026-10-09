@@ -23,7 +23,7 @@ export default function FormField<
   rules,
   required = rules != undefined,
   orientation,
-  render = formInput(),
+  input = formInput(),
   ...props
 }: {
   label?: ReactNode
@@ -31,7 +31,7 @@ export default function FormField<
   className?: string
   required?: boolean
   orientation?: "vertical" | "horizontal" | "responsive" | null
-  render?: FormInput<TFieldValues, TName>
+  input?: FormInput<TFieldValues, TName>
 } & UseControllerProps<TFieldValues, TName, TTransformedValues>) {
   const id = useId()
   return (
@@ -56,7 +56,7 @@ export default function FormField<
               {description}
             </FieldDescription>
           )}
-          {render({ field, fieldState, formState, id })}
+          {input({ field, fieldState, formState, id })}
           {fieldState.invalid && (
             <FieldError className={cn("absolute top-full text-xs")}>
               {fieldState.error?.message}

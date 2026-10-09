@@ -106,7 +106,7 @@ export default function InputSheet({
                 <FormField
                   name="date"
                   rules={{ required: "Date must be filled" }}
-                  render={dateInput()}
+                  input={dateInput()}
                 />
                 <FormField
                   name="value"
@@ -117,12 +117,12 @@ export default function InputSheet({
                       message: "Please enter a valid number",
                     },
                   }}
-                  render={formInput({ inputMode: "numeric" })}
+                  input={formInput({ inputMode: "numeric" })}
                 />
                 <FormField
                   name="status"
                   rules={{ required: "Status must be filled" }}
-                  render={selectString({
+                  input={selectString({
                     options: statusOptions,
                   })}
                 />

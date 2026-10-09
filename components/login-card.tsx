@@ -114,7 +114,7 @@ const LoginCard = forwardRef<
                 name="email"
                 required={false} // to remove * from label
                 rules={{ required: "Must be filled" }}
-                render={formInput({ type: "email" })}
+                input={formInput({ type: "email" })}
               />
               <FormField
                 name="password"
@@ -126,7 +126,7 @@ const LoginCard = forwardRef<
                     message: "Must be at least 8 characters",
                   },
                 }}
-                render={passwordInput({ placeholder: "Min. 8 characters" })}
+                input={passwordInput({ placeholder: "Min. 8 characters" })}
               />
               {!isLogin && (
                 <FormField
@@ -137,7 +137,7 @@ const LoginCard = forwardRef<
                       value == form.getValues("password") ||
                       "Must be same as Password",
                   }}
-                  render={passwordInput()}
+                  input={passwordInput()}
                 />
               )}
               {error && (

@@ -25,15 +25,9 @@ import { useLoading } from "./loading-context"
 import Paginator from "./ui/paginator"
 import { useDataView } from "@/hooks/use-data-view"
 import { TableColumn } from "./data-table-columns"
-import ButtonRefresh from "./ui/button-refresh"
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "./ui/empty"
+import EmptyState, { EmptyStateProps } from "./ui/empty-state"
+import { useFilter } from "./filter-provider"
+import ButtonClear from "./ui/button-clear"
 
 export default function DataTable<T extends Record<string, unknown>>({
   columns,
@@ -47,13 +41,14 @@ export default function DataTable<T extends Record<string, unknown>>({
   loadingRows?: number
   selectable?: boolean
   footerLabel?: ReactNode
-  errorState?: ReactNode
-  emptyState?: ReactNode
+  errorState?: EmptyStateProps
+  emptyState?: EmptyStateProps
   getRowId?: (row: T) => string | number
 }) {
   const { setState, pagination, sorting, response } = useDataView()
+  const { hasActiveFilters } = useFilter()
 
-  const { data = null, errors = null } = response ?? {}
+  const { data = null, error = null } = response ?? {}
 
   const [loading] = useLoading()
 
@@ -88,39 +83,6 @@ export default function DataTable<T extends Record<string, unknown>>({
 
   const getRowNumber = (index: number) =>
     (pageParam - 1) * (pagination?.pageSize ?? 1) + index + 1
-
-  const defaultErrorState = (
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia>
-          <CircleX className="text-destructive" />
-        </EmptyMedia>
-        <EmptyTitle>Error encountered</EmptyTitle>
-        <EmptyDescription>{errors?.at(0)?.message}</EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <ButtonRefresh size="default" variant="secondary">
-          Reload
-        </ButtonRefresh>
-      </EmptyContent>
-    </Empty>
-  )
-
-  const defaultEmtpyState = (
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia>
-          <CircleOff />
-        </EmptyMedia>
-        <EmptyTitle>Data not found</EmptyTitle>
-      </EmptyHeader>
-      <EmptyContent>
-        <ButtonRefresh size="default" variant="secondary">
-          Reload
-        </ButtonRefresh>
-      </EmptyContent>
-    </Empty>
-  )
 
   const footer = useMemo(() => {
     const first = columns.findIndex((col) => col.renderFooter)
@@ -214,11 +176,16 @@ export default function DataTable<T extends Record<string, unknown>>({
               </TableCell>
             </TableRow>
           ))
-        ) : errors ? (
+        ) : error ? (
           <TableRow>
             <TableCell colSpan={columnLength} className="p-0">
               <div className="sticky left-0 w-[100cqw]">
-                {errorState ?? defaultErrorState}
+                <EmptyState
+                  media={<CircleX className="text-destructive" />}
+                  title="Error encountered"
+                  description={error.message}
+                  {...errorState}
+                />
               </div>
             </TableCell>
           </TableRow>
@@ -226,7 +193,12 @@ export default function DataTable<T extends Record<string, unknown>>({
           <TableRow>
             <TableCell colSpan={columnLength} className="p-0">
               <div className="sticky left-0 w-[100cqw]">
-                {emptyState ?? defaultEmtpyState}
+                <EmptyState
+                  media={<CircleOff />}
+                  title="Data not found"
+                  content={hasActiveFilters && <ButtonClear />}
+                  {...emptyState}
+                />
               </div>
             </TableCell>
           </TableRow>

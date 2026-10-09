@@ -27,6 +27,7 @@ export default async function Page({
     .ilike("occupation", "occupation", (value) => `%${value}%`)
     .ilike("education", "education", (value) => `%${value}%`)
     .ilike("skill", "skill", (value) => `%${value}%`)
+    .in("gender", "gender")
     .gte("age", "start-age")
     .lte("age", "end-age")
     .gte("salary", "start-salary")

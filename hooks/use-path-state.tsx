@@ -6,6 +6,7 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react"
 
@@ -56,9 +57,14 @@ export function usePathState() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const [paramChanged, setParamChanged] = useState(false)
+  const dirtyState = useRef(new URLSearchParams(searchParams))
+
   const { update } = useContext(PathStateContext)
 
   useEffect(() => {
+    dirtyState.current = new URLSearchParams(searchParams)
+
     const currentQuery = searchParams.toString()
     if (currentQuery != localStorage.getItem(storageKey + pathname)) {
       localStorage.setItem(storageKey + pathname, currentQuery)
@@ -67,20 +73,30 @@ export function usePathState() {
   }, [pathname, searchParams])
 
   const setState = (data: Record<string, string | null>) => {
-    const newParams = new URLSearchParams(searchParams)
-
     Object.entries(data).forEach(([key, value]) => {
       if (value) {
-        newParams.set(key, value)
+        dirtyState.current.set(key, value)
       } else {
-        newParams.delete(key)
+        dirtyState.current.delete(key)
       }
     })
 
-    localStorage.setItem(storageKey + pathname, newParams.toString())
-    update()
-    router.replace(`${pathname}?${newParams.toString()}`, { scroll: false })
+    setParamChanged(true)
   }
+
+  useEffect(() => {
+    if (!paramChanged) {
+      return
+    }
+
+    localStorage.setItem(storageKey + pathname, dirtyState.current.toString())
+    update()
+    router.replace(`${pathname}?${dirtyState.current.toString()}`, {
+      scroll: false,
+    })
+
+    setParamChanged(false)
+  }, [paramChanged])
 
   return {
     searchParams,

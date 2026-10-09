@@ -18,7 +18,7 @@ export default function FilterField(
     label,
     submitOnChange = false,
     className,
-    render = formInput(),
+    input = formInput(),
     orientation = "horizontal",
     ...props
   }: {
@@ -26,7 +26,7 @@ export default function FilterField(
     submitOnChange?: boolean
     className?: string
     orientation?: "vertical" | "horizontal" | "responsive" | null
-    render?: FormInput
+    input?: FormInput
   } & Omit<UseControllerProps, "control"> //Force use of FormProvider
 ) {
   const id = useId()
@@ -79,7 +79,7 @@ export default function FilterField(
               {label}
             </FieldLabel>
           )}
-          {render({ field, fieldState, formState, id })}
+          {input({ field, fieldState, formState, id })}
           {fieldState.invalid && (
             <FieldError>{fieldState.error?.message}</FieldError>
           )}

@@ -10,6 +10,7 @@ import {
 } from "react"
 import { usePathState } from "./use-path-state"
 import { SupabaseSelectResponse } from "./use-supabase-select"
+import { FilterProvider } from "@/components/filter-provider"
 
 const dataViewContext = createContext<{
   response?: SupabaseSelectResponse<any[]>
@@ -73,7 +74,9 @@ export function DataViewProvider({
         },
       }}
     >
-      <LoadingContext state={loadingState}>{children}</LoadingContext>
+      <LoadingContext state={loadingState}>
+        <FilterProvider>{children}</FilterProvider>
+      </LoadingContext>
     </dataViewContext.Provider>
   )
 }

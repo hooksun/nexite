@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import DataTable from "@/components/data-table"
 import useSelectColumn from "@/hooks/use-select-column"
-import { CircleOff, Plus, Search, Trash } from "lucide-react"
+import { Plus, Search, Trash } from "lucide-react"
 import { useAlertDialog } from "@/hooks/use-alert-dialog"
 import { deleteTable } from "@/lib/supabase/crud-actions"
 import { useState } from "react"
@@ -15,21 +15,15 @@ import {
   FilterRange,
 } from "@/components/data-table-filters"
 import { actionsColumn, dataColumn } from "@/components/data-table-columns"
-import ButtonRefresh from "@/components/ui/button-refresh"
 import ButtonLoading from "@/components/ui/button-loading"
 import { insertDummyData } from "./actions"
 import FilterField from "@/components/filter-field"
 import { formInput } from "@/components/form-inputs"
 import Header from "@/components/ui/header"
-import {
-  Empty,
-  EmptyContent,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty"
 import { toast } from "@/components/ui/toast"
 import { useDataView } from "@/hooks/use-data-view"
+import { useFilter } from "@/components/filter-provider"
+import ButtonClear from "@/components/ui/button-clear"
 
 export default function TablePage({
   statusses = [],
@@ -47,6 +41,7 @@ export default function TablePage({
   const [updatingRow, setUpdatingRow] = useState<any>()
 
   const { setState } = useDataView()
+  const { hasActiveFilters } = useFilter()
 
   const handleInsertDummyData = async () => {
     const { error } = await insertDummyData()
@@ -119,24 +114,15 @@ export default function TablePage({
               },
             ]),
           ]}
-          emptyState={
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia>
-                  <CircleOff />
-                </EmptyMedia>
-                <EmptyTitle>Data not found</EmptyTitle>
-              </EmptyHeader>
-              <EmptyContent className="flex-row justify-center gap-2">
-                <ButtonRefresh size="default" variant="secondary">
-                  Reload
-                </ButtonRefresh>
-                <ButtonLoading onClick={handleInsertDummyData}>
-                  Add Dummy
-                </ButtonLoading>
-              </EmptyContent>
-            </Empty>
-          }
+          emptyState={{
+            content: hasActiveFilters ? (
+              <ButtonClear />
+            ) : (
+              <ButtonLoading onClick={handleInsertDummyData}>
+                Add Dummy
+              </ButtonLoading>
+            ),
+          }}
           footerLabel="Total"
           getRowId={(row) => row.id as string | number}
         />

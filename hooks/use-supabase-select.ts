@@ -7,7 +7,7 @@ export type SupabaseSelectResponse<D> = {
   data: D | null
   aggregate: any[] | null | undefined
   count: number | null
-  errors: PostgrestError[] | null
+  error: PostgrestError | null
 }
 
 const getSearchParams = (key: string | string[] | undefined) =>
@@ -106,14 +106,23 @@ export default async function useSupabaseSelect<
     aggregateQuery: aq,
     run: async () => {
       const { data, error, count } = await q
+
+      if (error) {
+        return {
+          data,
+          aggregate: null,
+          count,
+          error,
+        }
+      }
+
       const { data: aggregate, error: aggError } = aq ? await aq : {}
 
       return {
         data,
         aggregate,
         count,
-        errors:
-          error || aggError ? [error, aggError].filter((e) => e != null) : null,
+        error: aggError ?? null,
       }
     },
     config,

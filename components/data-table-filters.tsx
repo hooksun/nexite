@@ -25,6 +25,7 @@ import {
 import { FieldValues, FormProvider, useForm } from "react-hook-form"
 import FilterField from "./filter-field"
 import { dateInput, formInput } from "./form-inputs"
+import { useFilter } from "./filter-provider"
 
 function FilterButton({
   active,
@@ -74,6 +75,16 @@ export function FilterForm({
   const active = !!Object.values(form.formState.defaultValues ?? {}).find(
     (v) => v
   )
+
+  useFilter({
+    isActive: active,
+    onClear: () => {
+      const emtpyState = Object.fromEntries(
+        Object.keys(form.getValues()).map((key) => [key, null])
+      )
+      setValues(emtpyState)
+    },
+  })
 
   useEffect(() => {
     if (form.formState.isDirty) {
@@ -144,7 +155,13 @@ export function FilterChecklist({
 
   const clear = () => {
     setSelected(new Set())
+    setState({ [param]: null })
   }
+
+  useFilter({
+    isActive: selected.size > 0,
+    onClear: clear,
+  })
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -201,12 +218,12 @@ export function FilterRange({
           <div className="flex items-center gap-2">
             <FilterField
               name={startParam}
-              render={formInput({ inputMode: "numeric" })}
+              input={formInput({ inputMode: "numeric" })}
             />
             -
             <FilterField
               name={endParam}
-              render={formInput({ inputMode: "numeric" })}
+              input={formInput({ inputMode: "numeric" })}
             />
           </div>
           <div className="flex justify-end">
@@ -280,12 +297,9 @@ export function FilterDateRange({
       {(_, setValues) => (
         <>
           <div className="flex items-center gap-2">
-            <FilterField
-              name={startParam}
-              render={dateInput({ valueFormat })}
-            />
+            <FilterField name={startParam} input={dateInput({ valueFormat })} />
             -
-            <FilterField name={endParam} render={dateInput({ valueFormat })} />
+            <FilterField name={endParam} input={dateInput({ valueFormat })} />
           </div>
           <div className="flex justify-between">
             <Button
