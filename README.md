@@ -62,6 +62,17 @@ A personal project built to demonstrate my current frontend engineering skills, 
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Run with Docker
+
+The live demo is deployed on Vercel. A Dockerfile is included for self-hosting.
+
+```bash
+docker build -t nexite .
+docker run --rm -p 3000:3000 --env-file .env.local nexite
+```
+
+`.env.local` must contain `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. Values are read at runtime and are not baked into the image.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
