@@ -26,7 +26,7 @@ import { toast } from "@/components/ui/toast"
 import { Database } from "@/lib/supabase/supabase-types"
 import { User } from "@supabase/supabase-js"
 import { useEffect, useRef, useState } from "react"
-import { Control, useForm } from "react-hook-form"
+import { Control, useForm, useWatch } from "react-hook-form"
 import { upsertValue } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
@@ -37,55 +37,46 @@ import Header from "@/components/ui/header"
 export default function PageContent({
   user,
   defaultValues,
-  hasResponse = false,
   loading = false,
 }: {
   user?: User
   defaultValues?: Database["public"]["Tables"]["response"]["Row"]
-  hasResponse?: boolean
   loading?: boolean
 }) {
-  const { control, handleSubmit, watch, formState, reset, setValues } = useForm(
-    {
-      defaultValues: {
-        first_name: "",
-        last_name: "" as string | null,
-        email: "",
-        sensitive: "password123",
-        select: "",
-        date: "",
-        search: ["United States", "Indonesia"],
-        price: 10000000,
-        condition: false,
-        conditional: "" as string | null,
-        consent: false,
-      },
-      disabled: loading,
-    }
-  )
+  const isFilled = !!defaultValues
+
+  const { control, handleSubmit, formState, reset, setValues } = useForm({
+    defaultValues: {
+      first_name: "",
+      last_name: "" as string | null,
+      email: "",
+      sensitive: "password123",
+      select: "",
+      date: "",
+      search: ["United States", "Indonesia"],
+      price: 10000000,
+      condition: false,
+      conditional: "" as string | null,
+      consent: false,
+    },
+    disabled: loading,
+  })
 
   useEffect(() => {
-    if (hasResponse) {
+    if (isFilled) {
       setValues({
         condition: !!defaultValues?.conditional,
-        consent: hasResponse,
+        consent: isFilled,
         ...defaultValues,
       })
     }
-  }, [hasResponse, defaultValues])
+  }, [isFilled, defaultValues])
 
   const { confirm } = useAlertDialog()
 
   const [openLogin, setOpenLogin] = useState(false)
 
   const submitAfterLogin = useRef(false)
-
-  useEffect(() => {
-    if (user && submitAfterLogin.current) {
-      submitAfterLogin.current = false
-      handleSubmit(onSubmit)()
-    }
-  }, [user])
 
   type FormValues = typeof control extends Control<infer T> ? T : never
 
@@ -116,6 +107,16 @@ export default function PageContent({
       description: `Your response was ${defaultValues ? "updated" : "inserted"} successfully`,
     })
   }
+
+  useEffect(() => {
+    if (user && submitAfterLogin.current) {
+      submitAfterLogin.current = false
+      handleSubmit(onSubmit)()
+    }
+  }, [user])
+
+  const condition = useWatch({ control, name: "condition" })
+  const consent = useWatch({ control, name: "consent" })
 
   return (
     <>
@@ -194,7 +195,7 @@ export default function PageContent({
                   allowEmptyQuery: true,
                 })}
               />
-              <Collapsible open={watch("condition")}>
+              <Collapsible open={condition}>
                 <FormField
                   control={control}
                   name="condition"
@@ -231,13 +232,13 @@ export default function PageContent({
               <div className="flex justify-between">
                 <ButtonLoading
                   size="lg"
-                  disabled={!watch("consent")}
+                  disabled={!consent}
                   type="submit"
                   loading={formState.isSubmitting}
                 >
                   Submit
                 </ButtonLoading>
-                {hasResponse && (
+                {isFilled && (
                   <Button
                     className="text-destructive"
                     variant="link"
@@ -247,7 +248,7 @@ export default function PageContent({
                         title: "Clear response?",
                         description: "response will be deleted",
                         onConfirm: async () => {
-                          await deleteTable("response", [defaultValues?.id!])
+                          await deleteTable("response", [defaultValues!.id])
                           reset()
                         },
                       })

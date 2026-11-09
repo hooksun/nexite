@@ -21,11 +21,5 @@ export default async function Page() {
         .eq("owner", user.id)
         .single()
 
-  return (
-    <PageContent
-      user={user ?? undefined}
-      defaultValues={data as any}
-      hasResponse={!!data}
-    />
-  )
+  return <PageContent user={user ?? undefined} defaultValues={data as any} />
 }

@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
 import { Database } from "@/lib/supabase/supabase-types"
 import { SearchParams } from "@/lib/utils"
-import { PostgrestError, QueryData } from "@supabase/supabase-js"
+import { PostgrestError } from "@supabase/supabase-js"
 
-export type SupabaseSelectResponse<D> = {
+export type SelectSupabaseResponse<D> = {
   data: D | null
   aggregate: any[] | null | undefined
   count: number | null
@@ -16,7 +16,7 @@ type Row<T extends keyof Database["public"]["Tables"]> =
 const getSearchParams = (key: string | string[] | undefined) =>
   Array.isArray(key) ? key : key ? [key] : null
 
-export default async function useSupabaseSelect<
+export default async function selectSupabase<
   const T extends keyof Database["public"]["Tables"],
   D = Row<T>,
 >(
@@ -39,10 +39,10 @@ export default async function useSupabaseSelect<
   const params = (await searchParams) ?? {}
   const supabase = await createClient()
 
-  let query = supabase
+  const query = supabase
     .from(table)
     .select(select as string, { count: "exact", head: false, ...options })
-  let aggregateQuery = aggregateSelect
+  const aggregateQuery = aggregateSelect
     ? supabase.from(table).select(aggregateSelect)
     : undefined
 
@@ -72,7 +72,7 @@ export default async function useSupabaseSelect<
   type QueryBuilder = {
     query: typeof query
     aggregateQuery: typeof query | undefined
-    run: () => Promise<SupabaseSelectResponse<D[]>>
+    run: () => Promise<SelectSupabaseResponse<D[]>>
     config: {
       sorting?: {
         param: string

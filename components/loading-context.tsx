@@ -22,7 +22,8 @@ export function LoadingContext({
   defaultLoading?: boolean
   state?: [boolean, Dispatch<SetStateAction<boolean>>]
 }) {
-  const state = _state ?? useState(defaultLoading)
+  const autoState = useState(defaultLoading)
+  const state = _state ?? autoState
 
   return (
     <loadingContext.Provider value={state}>{children}</loadingContext.Provider>

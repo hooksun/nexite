@@ -12,7 +12,7 @@ export default function Header({ title }: { title?: ReactNode }) {
   const { isMobile } = useSidebar()
 
   return (
-    <header className="sticky top-0 z-1 w-full translate-y-0 bg-background transition-transform duration-300 ease-in-out [@container_scroll-state(scrolled:_bottom)]:not-focus-within:-translate-y-full">
+    <header className="sticky top-0 z-1 w-full translate-y-0 bg-background transition-transform duration-300 ease-in-out [@container_scroll-state(scrolled:_bottom)_and_(scroll-state(scrollable:_top))]:not-focus-within:-translate-y-full">
       <div className="flex items-center gap-2 p-2">
         {isMobile ? (
           <SidebarTrigger aria-label="Navigate" size="icon">

@@ -1,4 +1,4 @@
-import useSupabaseSelect from "@/hooks/use-supabase-select"
+import selectSupabase from "@/lib/supabase/select-supabase"
 import TablePage from "./content"
 import { SearchParams } from "@/lib/utils"
 import { DataViewProvider } from "@/hooks/use-data-view"
@@ -14,7 +14,7 @@ export default async function Page({
   searchParams?: Promise<SearchParams>
 }) {
   const builder = (
-    await useSupabaseSelect("dummy_data", {
+    await selectSupabase("dummy_data", {
       searchParams,
       aggregateSelect: "avg_age:age.avg(), avg_salary:salary.avg()",
     })

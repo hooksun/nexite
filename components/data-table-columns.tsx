@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
-import { SupabaseSelectResponse } from "@/hooks/use-supabase-select"
+import { SelectSupabaseResponse } from "@/lib/supabase/select-supabase"
 import { Button } from "./ui/button"
 import { Ellipsis } from "lucide-react"
 
@@ -21,7 +21,7 @@ export type TableColumn<T> = {
     row: T,
     rowState: { rowNumber: number; loading: boolean }
   ) => ReactNode
-  renderFooter?: (props: SupabaseSelectResponse<T[]>) => ReactNode
+  renderFooter?: (props: SelectSupabaseResponse<T[]>) => ReactNode
   skeletonized?: boolean
   headerClassName?: string
   cellClassName?: string

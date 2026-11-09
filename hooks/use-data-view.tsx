@@ -9,11 +9,11 @@ import {
   useState,
 } from "react"
 import { usePathState } from "./use-path-state"
-import { SupabaseSelectResponse } from "./use-supabase-select"
+import { SelectSupabaseResponse } from "../lib/supabase/select-supabase"
 import { FilterProvider } from "@/components/filter-provider"
 
 const dataViewContext = createContext<{
-  response?: SupabaseSelectResponse<any[]>
+  response?: SelectSupabaseResponse<any[]>
   sorting?: {
     param: string
     sorting?: string[]
@@ -37,7 +37,7 @@ export function DataViewProvider({
   stateType = "path-state",
   ...props
 }: {
-  response?: SupabaseSelectResponse<any[]>
+  response?: SelectSupabaseResponse<any[]>
   sorting?: {
     param: string
     sorting?: string[]
