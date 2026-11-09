@@ -1,5 +1,8 @@
 # Nexite
 
+![CI](https://github.com/hooksun/nexite/actions/workflows/ci.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 A personal project built to demonstrate my current frontend engineering skills, with a focus on reusable, well-engineered components.
 
 **[Live Demo](https://nexite-black.vercel.app/)**
